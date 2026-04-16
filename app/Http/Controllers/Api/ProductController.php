@@ -9,25 +9,52 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of products.
+     * Display a listing of products with pagination, search, and sorting.
      */
     public function index(Request $request)
     {
         $query = Product::with('category');
 
-        if ($request->has('category_id')) {
+        // 1. Robust Search logic
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%')
+                  ->orWhereHas('category', function($cq) use ($search) {
+                      $cq->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        // 2. Category Filter
+        if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        if ($request->has('max_price')) {
+        // 3. Price Filter
+        if ($request->filled('max_price')) {
             $query->where('price', '<=', $request->max_price);
         }
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+        // 4. Sorting options
+        $sort = $request->get('sort', 'latest');
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
         }
 
-        return response()->json($query->get());
+        // 5. Pagination (default 12 items per page)
+        $perPage = $request->get('per_page', 12);
+        return response()->json($query->paginate($perPage));
     }
 
     /**

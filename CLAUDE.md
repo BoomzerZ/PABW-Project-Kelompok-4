@@ -14,7 +14,13 @@
 - `PUT /api/user`: Update profile (Auth required)
 
 ### Products
-- `GET /api/products`: List all products
+- `GET /api/products`: List all products (supports pagination, search, filters, and sorting)
+  - `page`: Page number (default: 1)
+  - `per_page`: Items per page (default: 12)
+  - `search`: Robust search in name, description, and category
+  - `category_id`: Filter by category
+  - `max_price`: Filter by maximum price
+  - `sort`: `price_asc`, `price_desc`, `latest` (default)
 - `GET /api/products/context`: Get all products as JSON for AI
 - `GET /api/products/{id}`: Get product details
 
