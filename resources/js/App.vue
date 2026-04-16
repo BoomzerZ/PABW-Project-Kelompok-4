@@ -1,10 +1,10 @@
 <template>
   <div class="flex min-h-screen bg-black text-white">
     <!-- Sidebar -->
-    <Sidebar />
+    <Sidebar v-if="!$route.meta.hideSidebar" />
 
     <!-- Main Content -->
-    <main class="flex-1 ml-64 p-8">
+    <main :class="['flex-1 p-8', !$route.meta.hideSidebar ? 'ml-64' : '']">
       <router-view />
     </main>
   </div>

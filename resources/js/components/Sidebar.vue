@@ -25,10 +25,14 @@
     </nav>
 
     <div class="p-4 border-t border-zinc-800">
-      <div class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white cursor-pointer transition-colors">
+      <div v-if="authState.isAuthenticated" @click="handleLogout" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white cursor-pointer transition-colors">
         <LogOut class="w-5 h-5" />
         <span class="font-medium">Keluar</span>
       </div>
+      <router-link v-else to="/login" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white cursor-pointer transition-colors">
+        <LogIn class="w-5 h-5" />
+        <span class="font-medium">Masuk</span>
+      </router-link>
     </div>
   </aside>
 </template>
@@ -41,8 +45,13 @@ import {
   User, 
   ClipboardList, 
   LogOut,
+  LogIn,
   Gamepad2
 } from 'lucide-vue-next';
+import { authState, logout } from '../utils/auth';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const menuItems = [
   { name: 'Chat AI', path: '/', icon: MessageSquare },
@@ -51,4 +60,9 @@ const menuItems = [
   { name: 'Profil', path: '/profile', icon: User },
   { name: 'Pengaturan', path: '/settings', icon: Settings },
 ];
+
+const handleLogout = async () => {
+  await logout();
+  router.push('/login');
+};
 </script>
