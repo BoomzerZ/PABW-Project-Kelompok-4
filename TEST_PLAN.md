@@ -5,14 +5,14 @@ This document outlines the testing strategy and test cases for the Gaming Gear M
 
 ## 2. Test Objectives
 - Ensure a seamless transition from guest to member.
-- Verify AI chatbot accuracy in product recommendations.
+- Verify AI chatbot accuracy in product recommendations including technical specifications.
 - Validate UI design compliance (Black, White, Red palette, Sidebar).
 - Confirm functionality of key features like "Add to Cart" and Chat History.
 
 ## 3. Scope
 - Guest-to-Member Flow
-- AI Recommendations (Ollama Qwen 2.5)
-- UI/UX Design Verification
+- AI Recommendations (Ollama Qwen 2.5) with advanced attributes (DPI, Switch Type, etc.)
+- UI/UX Design Verification (Dark Theme, Sidebar Menu)
 - Core Marketplace Functionalities
 - Chat History Persistence
 
@@ -31,14 +31,16 @@ This document outlines the testing strategy and test cases for the Gaming Gear M
 | AI-01 | Budget Recommendation | Ask: "Recommend a mouse under $60". | AI suggests only products with `price <= 60`. |
 | AI-02 | Category Filtering | Ask: "Show me mechanical keyboards". | AI suggests only keyboards. |
 | AI-03 | Stock Awareness | Ask for a specific product that is out of stock. | AI mentions it is out of stock or suggests an alternative. |
-| AI-04 | JSON Interpretation | Verify AI correctly reads product attributes from the database JSON. | Attributes (DPI, Switches, etc.) in chat match database records. |
+| AI-04 | JSON Interpretation | Verify AI correctly reads product attributes from the database JSON. | Attributes match database records. |
+| AI-05 | Advanced Attributes | Ask for products with specific `switch_type`, `dpi`, `connectivity`, `sensor`, or `weight`. | AI accurately filters and mentions these specs in the response. |
 
 ### 4.3. UI/UX Verification
 | ID | Test Case | Description | Expected Result |
 |----|-----------|-------------|-----------------|
-| UI-01 | Color Palette | Inspect CSS for primary colors. | Uses #000000 (Black), #FFFFFF (White), and #FF0000 (Red) or similar. |
-| UI-02 | Sidebar Navigation | Verify sidebar existence and menu items. | Sidebar is visible and links to Categories, Home, Profile. |
+| UI-01 | Color Palette | Inspect CSS for primary colors. | Uses #000000 (Black background), #FFFFFF (White text), and #FF0000 (Red accents). |
+| UI-02 | Sidebar Navigation | Verify sidebar existence and menu items. | Sidebar contains: Chat AI, Keranjang, Pengaturan, Profil, Cek Pesanan. |
 | UI-03 | Responsiveness | Test on mobile, tablet, and desktop views. | Layout adjusts without breaking; Chat remains accessible. |
+| UI-04 | Product Widget Rendering | In chat, ask for a product recommendation. | AI response includes "Product Widget" cards with image, name, price, and "Add to Cart" button. |
 
 ### 4.4. Functionality
 | ID | Test Case | Description | Expected Result |
@@ -53,7 +55,7 @@ This document outlines the testing strategy and test cases for the Gaming Gear M
 | CH-02 | Session Persistence | User logs out and logs back in. | Chat history is still visible for the account. |
 
 ## 5. Technical Verification
-- **API Response:** `GET /api/products` should return valid JSON with correct types.
+- **API Response:** `GET /api/products` should return valid JSON with correct types including advanced attributes.
 - **AI Latency:** Response time for Ollama should be within acceptable limits (e.g., < 5s).
 - **Database Sync:** Verify that `team-db` reflects the same data as the local SQLite database.
 
