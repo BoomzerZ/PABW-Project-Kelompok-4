@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -23,11 +24,23 @@ class OrderController extends Controller
             return response()->json(['message' => 'Cart is empty'], 400);
         }
 
-        $totalPrice = $cartItems->sum(function ($item) {
+        $subtotal = $cartItems->sum(function ($item) {
             return $item->product->price * $item->quantity;
         });
 
-        return DB::transaction(function () use ($user, $cartItems, $totalPrice) {
+        $discount = 0;
+        $coupon = null;
+
+        if ($request->filled('coupon_code')) {
+            $coupon = Coupon::where('code', $request->coupon_code)->first();
+            if ($coupon && $coupon->isValid()) {
+                $discount = $coupon->calculateDiscount($subtotal);
+            }
+        }
+
+        $totalPrice = $subtotal - $discount;
+
+        return DB::transaction(function () use ($user, $cartItems, $totalPrice, $coupon) {
             $order = Order::create([
                 'user_id' => $user->id,
                 'total_price' => $totalPrice,
@@ -45,6 +58,11 @@ class OrderController extends Controller
                 // Update stock
                 $product = $cartItem->product;
                 $product->decrement('stock', $cartItem->quantity);
+            }
+
+            // Update coupon usage
+            if ($coupon) {
+                $coupon->increment('used_count');
             }
 
             // Clear cart
