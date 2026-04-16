@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChatHistory;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -32,6 +33,25 @@ class ChatController extends Controller
             if ($product->connectivity) $context .= "Connectivity: {$product->connectivity}. ";
             $context .= "\n";
         }
+
+        // 2. Add Order History Context if logged in
+        if ($userId) {
+            $orders = Order::with('items.product')
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->limit(3)
+                ->get();
+
+            if ($orders->isNotEmpty()) {
+                $context .= "\nThe user has the following recent orders:\n";
+                foreach ($orders as $order) {
+                    $context .= "- Order #{$order->id} (Status: {$order->status}, Total: {$order->total_price}, Date: {$order->created_at}): ";
+                    $itemNames = $order->items->map(fn($item) => "{$item->product->name} (x{$item->quantity})")->implode(', ');
+                    $context .= $itemNames . "\n";
+                }
+            }
+        }
+
         $context .= "\nPlease help the user based on this information. Answer in the same language as the user (Indonesian/English).";
 
         // 2. Call Ollama API

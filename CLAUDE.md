@@ -10,6 +10,8 @@
 - `POST /api/register`: Register new user
 - `POST /api/login`: Login user
 - `POST /api/logout`: Logout (Auth required)
+- `GET /api/user`: Get profile (Auth required)
+- `PUT /api/user`: Update profile (Auth required)
 
 ### Products
 - `GET /api/products`: List all products
@@ -17,13 +19,18 @@
 - `GET /api/products/{id}`: Get product details
 
 ### AI Chat
-- `POST /api/chat`: Chat with Ollama (Guest allowed)
+- `POST /api/chat`: Chat with Ollama (Guest allowed, contextual for members)
 - `GET /api/chat/history`: Get user's chat history (Auth required)
 
 ### Cart (Auth required)
 - `GET /api/cart`: List cart items
 - `POST /api/cart`: Add/update item in cart
 - `DELETE /api/cart/{id}`: Remove item from cart
+
+### Orders (Auth required)
+- `GET /api/orders`: List user orders
+- `POST /api/orders`: Create order (Checkout)
+- `GET /api/orders/{id}`: Get order details
 
 ## Database Schema
 ### Categories
