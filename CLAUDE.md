@@ -6,8 +6,24 @@
 - **Artisan**: `sudo docker run --rm -v $(pwd):/app -w /app composer php artisan <command>`
 
 ## API Routes
-- `GET /api/products`: List all products (supports filters: `category_id`, `max_price`, `search`)
+### Auth
+- `POST /api/register`: Register new user
+- `POST /api/login`: Login user
+- `POST /api/logout`: Logout (Auth required)
+
+### Products
+- `GET /api/products`: List all products
+- `GET /api/products/context`: Get all products as JSON for AI
 - `GET /api/products/{id}`: Get product details
+
+### AI Chat
+- `POST /api/chat`: Chat with Ollama (Guest allowed)
+- `GET /api/chat/history`: Get user's chat history (Auth required)
+
+### Cart (Auth required)
+- `GET /api/cart`: List cart items
+- `POST /api/cart`: Add/update item in cart
+- `DELETE /api/cart/{id}`: Remove item from cart
 
 ## Database Schema
 ### Categories

@@ -43,4 +43,13 @@ class ProductController extends Controller
 
         return response()->json($product);
     }
+
+    /**
+     * Get all products for AI context.
+     */
+    public function aiContext()
+    {
+        $products = Product::with('category')->get();
+        return response()->json($products);
+    }
 }
