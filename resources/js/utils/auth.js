@@ -1,11 +1,14 @@
 import axios from 'axios';
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 
+const token = localStorage.getItem('token');
 export const authState = reactive({
     user: null,
-    token: localStorage.getItem('token') || null,
-    isAuthenticated: !!localStorage.getItem('token')
+    token: token && token !== 'null' && token !== 'undefined' ? token : null,
+    isAuthenticated: !!(token && token !== 'null' && token !== 'undefined')
 });
+
+export const isAdmin = computed(() => authState.user?.is_admin === 1 || authState.user?.is_admin === true);
 
 if (authState.token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${authState.token}`;
