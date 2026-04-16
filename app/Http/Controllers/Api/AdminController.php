@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -20,6 +21,63 @@ class AdminController extends Controller
             }
             return $next($request);
         });
+    }
+
+    /**
+     * List all coupons (Admin).
+     */
+    public function listCoupons()
+    {
+        return response()->json(Coupon::all());
+    }
+
+    /**
+     * Create a new coupon.
+     */
+    public function storeCoupon(Request $request)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|unique:coupons,code',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'valid_until' => 'nullable|date',
+            'usage_limit' => 'nullable|integer|min:1',
+        ]);
+
+        $coupon = Coupon::create($validated);
+
+        return response()->json($coupon, 201);
+    }
+
+    /**
+     * Update a coupon.
+     */
+    public function updateCoupon(Request $request, $id)
+    {
+        $coupon = Coupon::findOrFail($id);
+
+        $validated = $request->validate([
+            'code' => 'string|unique:coupons,code,' . $id,
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'valid_until' => 'nullable|date',
+            'usage_limit' => 'nullable|integer|min:1',
+        ]);
+
+        $coupon->update($validated);
+
+        return response()->json($coupon);
+    }
+
+    /**
+     * Delete a coupon.
+     */
+    public function destroyCoupon($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        $coupon->delete();
+
+        return response()->json(['message' => 'Coupon deleted successfully']);
     }
 
     /**

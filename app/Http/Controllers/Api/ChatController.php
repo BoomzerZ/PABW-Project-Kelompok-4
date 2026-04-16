@@ -52,12 +52,23 @@ class ChatController extends Controller
             }
         }
 
-        // 3. Add Trends/New Arrivals Context
-        $newArrivals = Product::orderBy('created_at', 'desc')->limit(5)->get();
+        // 3. Add Trends/New Arrivals Context (Refined: explicit pitch for items < 7 days)
+        $sevenDaysAgo = now()->subDays(7);
+        $newArrivals = Product::where('created_at', '>=', $sevenDaysAgo)->orderBy('created_at', 'desc')->get();
+        
         if ($newArrivals->isNotEmpty()) {
-            $context .= "\nNew Arrivals (Current Trends):\n";
+            $context .= "\nWe have fresh NEW ARRIVALS (last 7 days). Please prioritize pitching these to the user if relevant:\n";
             foreach ($newArrivals as $item) {
-                $context .= "- {$item->name}\n";
+                $context .= "- {$item->name} (Brand new arrival!)\n";
+            }
+        } else {
+            // Fallback to recent 5 if no items in last 7 days
+            $recent = Product::orderBy('created_at', 'desc')->limit(5)->get();
+            if ($recent->isNotEmpty()) {
+                $context .= "\nCheck out these recent additions:\n";
+                foreach ($recent as $item) {
+                    $context .= "- {$item->name}\n";
+                }
             }
         }
 

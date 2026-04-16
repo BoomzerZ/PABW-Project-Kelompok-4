@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
@@ -36,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/pay', [PaymentController::class, 'pay']);
+
+    Route::post('/coupons/validate', [CouponController::class, 'validateCoupon']);
 });
 
 // Admin Routes
@@ -47,4 +50,9 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     Route::get('/orders', [AdminController::class, 'listOrders']);
     Route::put('/orders/{id}/status', [AdminController::class, 'updateOrderStatus']);
+
+    Route::get('/coupons', [AdminController::class, 'listCoupons']);
+    Route::post('/coupons', [AdminController::class, 'storeCoupon']);
+    Route::put('/coupons/{id}', [AdminController::class, 'updateCoupon']);
+    Route::delete('/coupons/{id}', [AdminController::class, 'destroyCoupon']);
 });

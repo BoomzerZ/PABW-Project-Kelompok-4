@@ -33,9 +33,15 @@
 - `POST /api/cart`: Add/update item in cart
 - `DELETE /api/cart/{id}`: Remove item from cart
 
+### Coupons
+- `POST /api/coupons/validate`: Validate a coupon code (Auth required)
+  - `code`: The coupon code
+  - `total_price`: The current total price before discount
+
 ### Orders (Auth required)
 - `GET /api/orders`: List user orders
 - `POST /api/orders`: Create order (Checkout)
+  - `coupon_code`: (Optional) Apply a coupon code during checkout
 - `GET /api/orders/{id}`: Get order details
 - `POST /api/orders/{id}/pay`: Simulate payment
 
@@ -46,6 +52,10 @@
 - `DELETE /api/admin/products/{id}`: Delete product
 - `GET /api/admin/orders`: List all orders (Global)
 - `PUT /api/admin/orders/{id}/status`: Update order status
+- `GET /api/admin/coupons`: List all coupons
+- `POST /api/admin/coupons`: Create coupon
+- `PUT /api/admin/coupons/{id}`: Update coupon
+- `DELETE /api/admin/coupons/{id}`: Delete coupon
 
 ## Database Schema
 ### Categories
