@@ -37,6 +37,15 @@
 - `GET /api/orders`: List user orders
 - `POST /api/orders`: Create order (Checkout)
 - `GET /api/orders/{id}`: Get order details
+- `POST /api/orders/{id}/pay`: Simulate payment
+
+### Admin (Auth & Admin required)
+- `GET /api/admin/products`: List all products (Admin)
+- `POST /api/admin/products`: Create product
+- `PUT /api/admin/products/{id}`: Update product
+- `DELETE /api/admin/products/{id}`: Delete product
+- `GET /api/admin/orders`: List all orders (Global)
+- `PUT /api/admin/orders/{id}/status`: Update order status
 
 ## Database Schema
 ### Categories

@@ -52,9 +52,18 @@ class ChatController extends Controller
             }
         }
 
+        // 3. Add Trends/New Arrivals Context
+        $newArrivals = Product::orderBy('created_at', 'desc')->limit(5)->get();
+        if ($newArrivals->isNotEmpty()) {
+            $context .= "\nNew Arrivals (Current Trends):\n";
+            foreach ($newArrivals as $item) {
+                $context .= "- {$item->name}\n";
+            }
+        }
+
         $context .= "\nPlease help the user based on this information. Answer in the same language as the user (Indonesian/English).";
 
-        // 2. Call Ollama API
+        // 4. Call Ollama API
         try {
             $response = Http::timeout(60)->post('http://localhost:11434/api/generate', [
                 'model' => 'qwen2.5',
@@ -68,7 +77,7 @@ class ChatController extends Controller
 
             $aiResponse = $response->json('response');
 
-            // 3. Save History
+            // 5. Save History
             ChatHistory::create([
                 'user_id' => $userId,
                 'message' => $userMessage,
