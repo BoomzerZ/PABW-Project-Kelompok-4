@@ -70,10 +70,10 @@ const scrollToBottom = async () => {
 
 const fetchProducts = async () => {
   try {
-    const response = await axios.get('/api/products');
+    const response = await axios.get('/api/products/context');
     allProducts.value = response.data;
   } catch (error) {
-    console.error('Failed to fetch products', error);
+    console.error('Failed to fetch products for context', error);
   }
 };
 
