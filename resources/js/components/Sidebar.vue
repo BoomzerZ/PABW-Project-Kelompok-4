@@ -39,6 +39,7 @@
 
 <script setup>
 import { 
+  Home as HomeIcon,
   MessageSquare, 
   ShoppingCart, 
   Settings, 
@@ -54,9 +55,10 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const menuItems = [
-  { name: 'Chat AI', path: '/', icon: MessageSquare },
+  { name: 'Beranda', path: '/', icon: HomeIcon },
+  { name: 'Chat AI', path: '/chat', icon: MessageSquare },
   { name: 'Keranjang', path: '/cart', icon: ShoppingCart },
-  { name: 'Cek Pesanan', path: '/orders', icon: ClipboardList },
+  { name: 'Riwayat Pesanan', path: '/orders', icon: ClipboardList },
   { name: 'Profil', path: '/profile', icon: User },
   { name: 'Pengaturan', path: '/settings', icon: Settings },
 ];
