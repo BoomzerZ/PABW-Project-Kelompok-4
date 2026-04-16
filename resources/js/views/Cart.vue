@@ -83,17 +83,15 @@ const removeItem = async (id) => {
 };
 
 const handleCheckout = async () => {
+  if (cartItems.value.length === 0) return;
+  
   checkoutLoading.value = true;
-  // Order API not yet fully specified in routes/api.php but mentioned in task
-  // Assuming POST /api/orders
   try {
-    // For now, mock checkout if API doesn't exist yet or use a simple alert
-    // The backend engineer said they implemented Order Tracking, so let's check routes
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    alert('Checkout berhasil! Pesanan Anda sedang diproses.');
+    const response = await axios.post('/api/orders');
+    alert('Checkout berhasil! ID Pesanan: ' + response.data.id);
     cartItems.value = [];
   } catch (error) {
-    alert('Gagal melakukan checkout');
+    alert(error.response?.data?.message || 'Gagal melakukan checkout');
   } finally {
     checkoutLoading.value = false;
   }

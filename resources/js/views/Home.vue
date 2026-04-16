@@ -166,7 +166,8 @@ const fetchProducts = async () => {
   loading.value = true;
   try {
     const response = await axios.get('/api/products');
-    products.value = response.data;
+    // Handle paginated response
+    products.value = response.data.data || response.data;
   } catch (error) {
     console.error('Failed to fetch products', error);
   } finally {
@@ -179,7 +180,8 @@ const handleSearch = async () => {
     const response = await axios.get('/api/products', {
       params: { search: searchQuery.value }
     });
-    products.value = response.data;
+    // Handle paginated response
+    products.value = response.data.data || response.data;
   } catch (error) {
     console.error('Search failed', error);
   }

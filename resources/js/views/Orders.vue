@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-4xl mx-auto space-y-8">
     <h1 class="text-3xl font-bold">Riwayat Pesanan</h1>
-    
+
     <div v-if="loading" class="flex justify-center py-20">
       <Loader2 class="w-10 h-10 animate-spin text-red-600" />
     </div>
@@ -41,8 +41,8 @@
           </div>
 
           <div class="flex items-center justify-center md:border-l md:border-zinc-800 md:pl-6">
-            <router-link 
-              :to="`/orders/${order.id}`" 
+            <router-link
+              :to="`/orders/${order.id}`"
               class="bg-zinc-800 group-hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 whitespace-nowrap"
             >
               Lihat Detail
@@ -82,7 +82,9 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('id-ID', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   });
 };
 
