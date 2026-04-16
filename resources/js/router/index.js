@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import Home from '../views/Home.vue';
 import Chat from '../views/Chat.vue';
 import Cart from '../views/Cart.vue';
 import Orders from '../views/Orders.vue';
@@ -9,7 +10,8 @@ import Register from '../views/Register.vue';
 import { authState } from '../utils/auth';
 
 const routes = [
-  { path: '/', name: 'Chat', component: Chat },
+  { path: '/', name: 'Home', component: Home },
+  { path: '/chat', name: 'Chat', component: Chat },
   { path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true } },
   { path: '/orders', name: 'Orders', component: Orders, meta: { requiresAuth: true } },
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
