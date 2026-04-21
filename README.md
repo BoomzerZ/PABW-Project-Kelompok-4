@@ -1,58 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Panduan Instalasi Projek PABW Marketplace AI
+Projek ini adalah marketplace gaming gear yang terintegrasi dengan AI Chatbot lokal (Ollama + Qwen 2.5). Berikut adalah langkah-langkah lengkap untuk menjalankan projek ini di komputer lokal Anda.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+1. Prasyarat (Prerequisites)
+Pastikan komputer Anda sudah terinstal software berikut:
 
-## About Laravel
+PHP (minimal versi 8.2)
+Composer (untuk dependensi Laravel)
+Node.js & NPM (untuk dependensi Vue.js/Vite)
+Git
+Ollama (untuk menjalankan model AI secara lokal)
+SQLite (sudah termasuk dalam PHP biasanya)
+2. Setup AI (Ollama)
+Projek ini menggunakan model AI Qwen 2.5 secara lokal.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Download dan instal Ollama di ollama.com.
+Jalankan terminal/command prompt, lalu jalankan perintah berikut untuk mengunduh model Qwen 2.5:
+ollama pull qwen2.5
+Pastikan Ollama berjalan di background (biasanya di http://localhost:11434).
+3. Setup Projek (Backend & Frontend)
+Langkah 1: Clone Repositori
+Buka terminal dan jalankan:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+git clone https://github.com/fienda87/pabw-marketplace-ai.git
+cd pabw-marketplace-ai
+Langkah 2: Setup Backend (Laravel)
+Instal dependensi PHP:
+composer install
+Duplikat file .env:
+cp .env.example .env
+Generate kunci aplikasi:
+php artisan key:generate
+Konfigurasi Database:
+Secara default projek ini menggunakan SQLite.
+Di file .env, pastikan pengaturannya seperti ini:
+DB_CONNECTION=sqlite
+# Hapus atau kosongkan baris DB_DATABASE lainnya
+Buat file database kosong (khusus Linux/Mac): touch database/database.sqlite. Untuk Windows, buat file baru bernama database.sqlite di folder database.
+Jalankan Migrasi dan Seeding (Data Awal):
+php artisan migrate --seed
+Ini akan membuat tabel dan mengisi data produk gaming gear awal serta akun Admin.
+Langkah 3: Setup Frontend (Vue.js)
+Instal dependensi JavaScript:
+npm install
+Build atau jalankan compiler aset:
+npm run dev
+4. Cara Menjalankan Aplikasi
+Anda perlu menjalankan dua perintah ini di dua terminal yang berbeda:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Terminal 1 (Backend):
 
-## Learning Laravel
+php artisan serve
+Aplikasi akan berjalan di http://127.0.0.1:8000.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Terminal 2 (Frontend/Vite):
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+npm run dev
+5. Akun Akses (Default)
+Setelah berhasil dijalankan, Anda bisa login menggunakan akun berikut:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Akun Admin:
 
-## Agentic Development
+Email: admin@pabw.com
+Password: password
+Akun User Biasa:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Silakan daftar melalui halaman Register.
+6. Fitur AI Chat
+Pastikan aplikasi Ollama sedang berjalan.
+Anda bisa langsung menuju menu Chat AI di sidebar kiri untuk berkonsultasi mengenai gaming gear.
+AI akan memberikan rekomendasi berdasarkan stok produk yang ada di database Anda.
+Catatan: Jika ada kendala koneksi ke Ollama, pastikan URL di file .env sudah benar atau biarkan default ke localhost.
