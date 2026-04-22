@@ -6,8 +6,9 @@ Selamat datang di projek PABW Marketplace AI. Projek ini adalah platform e-comme
 - Etalase Produk (Amazon-style): Grid produk gaming profesional dengan fitur pencarian dan kategori.
 - Local AI Chatbot: Konsultasi rekomendasi gear menggunakan model Qwen 2.5 yang dijalankan secara lokal via Ollama.
 - Alur Belanja Lengkap: Dari pencarian produk, keranjang belanja, hingga simulasi pembayaran.
-- Admin Dashboard: Kelola stok produk, kategori, dan pantau pesanan masuk secara real-time.
-- Personalized Experience: AI mengenali riwayat belanja untuk memberikan rekomendasi yang lebih pas.
+- Admin Dashboard: Kelola stok produk, kategori, kupon diskon, dan pantau pesanan masuk secara real-time.
+- Coupon System: Gunakan kode promo untuk mendapatkan potongan harga saat checkout.
+- Personalized Experience: AI mengenali riwayat belanja dan produk terbaru (New Arrivals) untuk memberikan rekomendasi yang lebih pas.
 
 ## Teknologi yang Digunakan
 - Backend: Laravel 11 (PHP 8.2+)
