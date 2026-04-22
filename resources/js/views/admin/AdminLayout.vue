@@ -46,6 +46,7 @@ import {
   LayoutDashboard, 
   Package, 
   ClipboardList, 
+  Ticket,
   ShieldCheck,
   ArrowLeft
 } from 'lucide-vue-next';
@@ -54,5 +55,6 @@ const adminMenu = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { name: 'Kelola Produk', path: '/admin/products', icon: Package },
   { name: 'Kelola Pesanan', path: '/admin/orders', icon: ClipboardList },
+  { name: 'Kelola Kupon', path: '/admin/coupons', icon: Ticket },
 ];
 </script>
