@@ -72,11 +72,27 @@ class ChatController extends Controller
             }
         }
 
+        // 4. Add Active Coupons Context
+        $coupons = \App\Models\Coupon::where('valid_until', '>', now())
+            ->where(function($query) {
+                $query->whereNull('usage_limit')
+                    ->orWhereColumn('used_count', '<', 'usage_limit');
+            })->get();
+
+        if ($coupons->isNotEmpty()) {
+            $context .= "\nWe have the following ACTIVE COUPONS that you can share with the user if they ask for discounts:\n";
+            foreach ($coupons as $coupon) {
+                $discountText = $coupon->discount_percentage ? "{$coupon->discount_percentage}% off" : "Rp " . number_format($coupon->discount_amount) . " off";
+                $context .= "- Code: '{$coupon->code}' ($discountText)\n";
+            }
+        }
+
         $context .= "\nPlease help the user based on this information. Answer in the same language as the user (Indonesian/English).";
 
-        // 4. Call Ollama API
+        // 5. Call Ollama API
         try {
-            $response = Http::timeout(60)->post('http://localhost:11434/api/generate', [
+            $ollamaHost = env('OLLAMA_HOST', 'http://localhost:11434');
+            $response = Http::timeout(60)->post("{$ollamaHost}/api/generate", [
                 'model' => 'qwen2.5',
                 'prompt' => "Context: {$context}\n\nUser: {$userMessage}\nAI:",
                 'stream' => false,
@@ -88,7 +104,7 @@ class ChatController extends Controller
 
             $aiResponse = $response->json('response');
 
-            // 5. Save History
+            // 6. Save History
             ChatHistory::create([
                 'user_id' => $userId,
                 'message' => $userMessage,
