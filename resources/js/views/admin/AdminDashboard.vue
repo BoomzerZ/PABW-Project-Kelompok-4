@@ -2,7 +2,7 @@
   <div class="space-y-8">
     <h1 class="text-3xl font-bold">Admin Dashboard</h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl space-y-2 shadow-xl">
         <h3 class="text-zinc-500 text-xs font-black uppercase tracking-widest text-white/70">Total Penjualan</h3>
         <p class="text-4xl font-black text-red-600">Rp {{ formatPrice(stats.totalSales) }}</p>
@@ -14,6 +14,10 @@
       <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl space-y-2 shadow-xl">
         <h3 class="text-zinc-500 text-xs font-black uppercase tracking-widest text-white/70">Total Produk</h3>
         <p class="text-4xl font-black text-white">{{ stats.totalProducts }}</p>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl space-y-2 shadow-xl">
+        <h3 class="text-zinc-500 text-xs font-black uppercase tracking-widest text-white/70">Total Kupon</h3>
+        <p class="text-4xl font-black text-white">{{ stats.totalCoupons }}</p>
       </div>
     </div>
 
@@ -61,7 +65,8 @@ import axios from 'axios';
 const stats = ref({
   totalSales: 0,
   totalOrders: 0,
-  totalProducts: 0
+  totalProducts: 0,
+  totalCoupons: 0
 });
 const recentOrders = ref([]);
 
@@ -80,9 +85,10 @@ const getStatusClass = (status) => {
 
 const fetchData = async () => {
   try {
-    const [ordersRes, productsRes] = await Promise.all([
+    const [ordersRes, productsRes, couponsRes] = await Promise.all([
       axios.get('/api/admin/orders'),
-      axios.get('/api/products')
+      axios.get('/api/products'),
+      axios.get('/api/admin/coupons')
     ]);
 
     const orders = ordersRes.data;
@@ -94,7 +100,9 @@ const fetchData = async () => {
       .reduce((sum, o) => sum + parseFloat(o.total_price), 0);
     
     // Check if productsRes.data is paginated
-    stats.value.totalProducts = productsRes.data.total || productsRes.data.length || 0;
+    stats.value.totalProducts = productsRes.data.total || productsRes.data.length || (productsRes.data.data ? productsRes.data.data.length : 0);
+    
+    stats.value.totalCoupons = couponsRes.data.length;
   } catch (error) {
     console.error('Failed to fetch dashboard data', error);
   }
