@@ -9,7 +9,7 @@
 
     <nav class="flex-1 px-4 space-y-2 mt-4">
       <router-link 
-        v-for="item in menuItems" 
+        v-for="item in filteredMenuItems" 
         :key="item.path" 
         :to="item.path"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group"
@@ -47,10 +47,12 @@ import {
   ClipboardList, 
   LogOut,
   LogIn,
-  Gamepad2
+  Gamepad2,
+  ShieldCheck
 } from 'lucide-vue-next';
-import { authState, logout } from '../utils/auth';
+import { authState, logout, isAdmin } from '../utils/auth';
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 
 const router = useRouter();
 
@@ -59,9 +61,14 @@ const menuItems = [
   { name: 'Chat AI', path: '/chat', icon: MessageSquare },
   { name: 'Keranjang', path: '/cart', icon: ShoppingCart },
   { name: 'Riwayat Pesanan', path: '/orders', icon: ClipboardList },
+  { name: 'Admin Panel', path: '/admin', icon: ShieldCheck, adminOnly: true },
   { name: 'Profil', path: '/profile', icon: User },
   { name: 'Pengaturan', path: '/settings', icon: Settings },
 ];
+
+const filteredMenuItems = computed(() => {
+  return menuItems.filter(item => !item.adminOnly || isAdmin.value);
+});
 
 const handleLogout = async () => {
   await logout();
