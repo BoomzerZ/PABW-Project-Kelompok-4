@@ -11,19 +11,6 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     /**
-     * Ensure the user is an admin.
-     */
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!$request->user() || !$request->user()->is_admin) {
-                return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
-            }
-            return $next($request);
-        });
-    }
-
-    /**
      * List all coupons (Admin).
      */
     public function listCoupons()
