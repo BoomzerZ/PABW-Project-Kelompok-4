@@ -8,7 +8,10 @@
     </div>
 
     <!-- Product Table -->
-    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden relative min-h-[400px]">
+      <div v-if="loading" class="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center">
+        <Loader2 class="w-10 h-10 animate-spin text-red-600" />
+      </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-zinc-800/50 text-zinc-400 text-xs uppercase">
@@ -117,10 +120,11 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue';
-import { Plus, Edit3, Trash2, X } from 'lucide-vue-next';
+import { Plus, Edit3, Trash2, X, Loader2 } from 'lucide-vue-next';
 import axios from 'axios';
 
 const products = ref([]);
+const loading = ref(false);
 const showModal = ref(false);
 const editingProduct = ref(null);
 const saveLoading = ref(false);
@@ -144,11 +148,15 @@ const formatPrice = (price) => {
 };
 
 const fetchProducts = async () => {
+  loading.value = true;
   try {
     const res = await axios.get('/api/products');
     products.value = res.data.data || res.data;
   } catch (e) {
-    console.error(e);
+    console.error('Failed to fetch products:', e);
+    alert('Gagal mengambil data produk');
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -177,6 +185,8 @@ const openEditModal = (product) => {
 };
 
 const saveProduct = async () => {
+  if (saveLoading.value) return;
+  
   saveLoading.value = true;
   try {
     if (editingProduct.value) {
@@ -185,10 +195,12 @@ const saveProduct = async () => {
       await axios.post('/api/admin/products', form);
     }
     showModal.value = false;
-    fetchProducts();
+    await fetchProducts(); // Await data refresh
     alert('Produk berhasil disimpan!');
   } catch (e) {
-    alert('Gagal menyimpan produk');
+    console.error('Save failed:', e);
+    const msg = e.response?.data?.message || 'Gagal menyimpan produk. Silakan coba lagi.';
+    alert(msg);
   } finally {
     saveLoading.value = false;
   }
@@ -196,12 +208,16 @@ const saveProduct = async () => {
 
 const deleteProduct = async (id) => {
   if (!confirm('Yakin ingin menghapus produk ini?')) return;
+  loading.value = true;
   try {
     await axios.delete(`/api/admin/products/${id}`);
-    fetchProducts();
+    await fetchProducts();
     alert('Produk berhasil dihapus');
   } catch (e) {
+    console.error('Delete failed:', e);
     alert('Gagal menghapus produk');
+  } finally {
+    loading.value = false;
   }
 };
 
