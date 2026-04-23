@@ -60,6 +60,9 @@
             class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-red-600/50 transition-all group shadow-xl hover:shadow-red-600/5"
           >
             <div class="relative aspect-square overflow-hidden">
+              <div v-if="isNewProduct(product.created_at)" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter z-10 animate-pulse">
+                New Arrival
+              </div>
               <img :src="product.image_url" :alt="product.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <button @click="addToCart(product)" class="bg-red-600 p-3 rounded-full text-white hover:bg-red-700 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl">
@@ -160,6 +163,14 @@ const keyboards = computed(() => {
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
+};
+
+const isNewProduct = (date) => {
+  if (!date) return false;
+  const createdDate = new Date(date);
+  const now = new Date();
+  const diffDays = Math.ceil((now - createdDate) / (1000 * 60 * 60 * 24));
+  return diffDays <= 7;
 };
 
 const fetchProducts = async () => {

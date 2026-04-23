@@ -14,6 +14,7 @@ import AdminLayout from '../views/admin/AdminLayout.vue';
 import AdminDashboard from '../views/admin/AdminDashboard.vue';
 import AdminProducts from '../views/admin/AdminProducts.vue';
 import AdminOrders from '../views/admin/AdminOrders.vue';
+import AdminCoupons from '../views/admin/AdminCoupons.vue';
 
 import { authState } from '../utils/auth';
 
@@ -39,6 +40,7 @@ const routes = [
       { path: '', name: 'AdminDashboard', component: AdminDashboard },
       { path: 'products', name: 'AdminProducts', component: AdminProducts },
       { path: 'orders', name: 'AdminOrders', component: AdminOrders },
+      { path: 'coupons', name: 'AdminCoupons', component: AdminCoupons },
     ]
   }
 ];

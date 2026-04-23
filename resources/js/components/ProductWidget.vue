@@ -1,6 +1,9 @@
 <template>
-  <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden max-w-sm">
-    <img :src="product.image_url" :alt="product.name" class="w-full h-48 object-cover" />
+  <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden max-w-sm relative group">
+    <div v-if="isNewArrival" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter z-10 animate-pulse">
+      New Arrival
+    </div>
+    <img :src="product.image_url" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
     <div class="p-4">
       <h3 class="text-lg font-bold text-white">{{ product.name }}</h3>
       <p class="text-zinc-400 text-sm mt-1 line-clamp-2">{{ product.description }}</p>
@@ -20,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { ShoppingCart } from 'lucide-vue-next';
 import { authState } from '../utils/auth';
 import { useRouter } from 'vue-router';
@@ -34,6 +37,14 @@ const props = defineProps({
     type: Object,
     required: true
   }
+});
+
+const isNewArrival = computed(() => {
+  if (!props.product.created_at) return false;
+  const createdDate = new Date(props.product.created_at);
+  const now = new Date();
+  const diffDays = Math.ceil((now - createdDate) / (1000 * 60 * 60 * 24));
+  return diffDays <= 7;
 });
 
 const formatPrice = (price) => {
