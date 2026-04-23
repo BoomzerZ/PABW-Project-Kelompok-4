@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Admin Routes
-Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::get('/products', [AdminController::class, 'listProducts']);
     Route::post('/products', [AdminController::class, 'storeProduct']);
     Route::put('/products/{id}', [AdminController::class, 'updateProduct']);
