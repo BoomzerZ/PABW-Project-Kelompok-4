@@ -27,6 +27,7 @@
 ### AI Chat
 - `POST /api/chat`: Chat with Ollama (Guest allowed, contextual for members)
 - `GET /api/chat/history`: Get user's chat history (Auth required)
+- `GET /api/health/ollama`: Check if Ollama service is reachable
 
 ### Cart (Auth required)
 - `GET /api/cart`: List cart items
