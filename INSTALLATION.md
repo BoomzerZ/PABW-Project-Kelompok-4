@@ -100,10 +100,14 @@ Setelah berhasil dijalankan, Anda bisa login menggunakan akun berikut:
 
 ---
 
-## 6. Fitur AI Chat
+## 6. Fitur AI Chat & Kupon
 - Pastikan aplikasi Ollama sedang berjalan.
 - Anda bisa langsung menuju menu **Chat AI** di sidebar kiri untuk berkonsultasi mengenai gaming gear.
 - AI akan memberikan rekomendasi berdasarkan stok produk yang ada di database Anda.
+- **Sistem Kupon:** Anda dapat menggunakan kode kupon berikut untuk mendapatkan diskon saat checkout:
+  - `GAMER20`: Diskon 20%
+  - `50KOFF`: Potongan Rp 50.000
+  - `EXPIRED`: (Hanya untuk testing error)
 
 ---
 **Catatan:** Jika ada kendala koneksi ke Ollama, pastikan URL di file `.env` sudah benar atau biarkan default ke `localhost`.
