@@ -23,9 +23,9 @@ class ChatController extends Controller
         $userMessage = $request->message;
         $userId = auth('sanctum')->id();
 
-        // 1. Get Product Context
-        $products = Product::with('category')->get();
-        $context = "You are a gaming gear expert assistant. Here is the product list in our marketplace:\n";
+        // 1. Get Product Context (Only products in stock)
+        $products = Product::with('category')->where('stock', '>', 0)->get();
+        $context = "You are a gaming gear expert assistant. Here is the product list in our marketplace (All items listed are IN STOCK):\n";
         foreach ($products as $product) {
             $context .= "- {$product->name} ({$product->category->name}): price {$product->price}, stock {$product->stock}. ";
             if ($product->switch_type) $context .= "Switches: {$product->switch_type}. ";
@@ -92,14 +92,17 @@ class ChatController extends Controller
         // 5. Call Ollama API
         try {
             $ollamaHost = env('OLLAMA_HOST', 'http://localhost:11434');
-            $response = Http::timeout(60)->post("{$ollamaHost}/api/generate", [
+            $response = Http::timeout(15)->post("{$ollamaHost}/api/generate", [
                 'model' => 'qwen2.5',
                 'prompt' => "Context: {$context}\n\nUser: {$userMessage}\nAI:",
                 'stream' => false,
             ]);
 
             if ($response->failed()) {
-                return response()->json(['error' => 'Ollama API failed'], 500);
+                return response()->json([
+                    'error' => 'AI Service Unavailable',
+                    'message' => 'Layanan AI sedang mengalami gangguan (Ollama API failed). Silakan coba lagi nanti.'
+                ], 503);
             }
 
             $aiResponse = $response->json('response');
@@ -115,8 +118,47 @@ class ChatController extends Controller
                 'message' => $userMessage,
                 'response' => $aiResponse,
             ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            return response()->json([
+                'error' => 'AI Service Timeout',
+                'message' => 'Layanan AI tidak merespon dalam waktu yang ditentukan. Pastikan Ollama sudah berjalan.'
+            ], 503);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Connection to Ollama failed: ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'AI Chat Error',
+                'message' => 'Terjadi kesalahan saat berkomunikasi dengan AI: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Health check for Ollama service.
+     */
+    public function healthCheck()
+    {
+        try {
+            $ollamaHost = env('OLLAMA_HOST', 'http://localhost:11434');
+            $response = Http::timeout(5)->get("{$ollamaHost}/api/tags");
+            
+            if ($response->successful()) {
+                return response()->json([
+                    'status' => 'ok',
+                    'service' => 'Ollama',
+                    'message' => 'Layanan AI tersedia.'
+                ]);
+            }
+            
+            return response()->json([
+                'status' => 'error',
+                'service' => 'Ollama',
+                'message' => 'Layanan AI tidak merespon dengan benar.'
+            ], 503);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'down',
+                'service' => 'Ollama',
+                'message' => 'Layanan AI tidak dapat dijangkau.'
+            ], 503);
         }
     }
 

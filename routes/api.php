@@ -27,6 +27,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 
 Route::post('/chat', [ChatController::class, 'chat']);
 Route::get('/chat/history', [ChatController::class, 'history'])->middleware('auth:sanctum');
+Route::get('/health/ollama', [ChatController::class, 'healthCheck']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
