@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::get('/products', [AdminController::class, 'listProducts']);
     Route::post('/products', [AdminController::class, 'storeProduct']);
+    Route::post('/products/upload-image', [AdminController::class, 'uploadImage']);
     Route::put('/products/{id}', [AdminController::class, 'updateProduct']);
     Route::delete('/products/{id}', [AdminController::class, 'destroyProduct']);
 
