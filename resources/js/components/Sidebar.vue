@@ -48,7 +48,9 @@ import {
   LogOut,
   LogIn,
   Gamepad2,
-  ShieldCheck
+  ShieldCheck,
+  Heart,
+  Bell
 } from 'lucide-vue-next';
 import { authState, logout, isAdmin } from '../utils/auth';
 import { useRouter } from 'vue-router';
@@ -59,6 +61,8 @@ const router = useRouter();
 const menuItems = [
   { name: 'Beranda', path: '/', icon: HomeIcon },
   { name: 'Chat AI', path: '/chat', icon: MessageSquare },
+  { name: 'Wishlist', path: '/wishlist', icon: Heart },
+  { name: 'Notifikasi', path: '/notifications', icon: Bell },
   { name: 'Keranjang', path: '/cart', icon: ShoppingCart },
   { name: 'Riwayat Pesanan', path: '/orders', icon: ClipboardList },
   { name: 'Admin Panel', path: '/admin', icon: ShieldCheck, adminOnly: true },

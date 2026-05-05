@@ -19,18 +19,18 @@
     </div>
 
     <!-- Hero Banner -->
-    <div class="relative rounded-3xl overflow-hidden aspect-[21/9] md:aspect-[3/1] group shadow-2xl">
+    <div class="relative rounded-3xl overflow-hidden aspect-[16/10] md:aspect-[3/1] group shadow-2xl">
       <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2000" alt="Hero Banner" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-      <div class="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent flex flex-col justify-center px-12 space-y-6">
-        <span class="inline-block bg-red-600 text-white px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase">Promo Ramadhan</span>
-        <h2 class="text-5xl md:text-6xl font-black text-white leading-tight">
+      <div class="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent flex flex-col justify-center px-6 md:px-12 space-y-4 md:space-y-6">
+        <span class="inline-block bg-red-600 text-white px-3 py-1 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase self-start">Promo Ramadhan</span>
+        <h2 class="text-3xl md:text-6xl font-black text-white leading-tight uppercase">
           LEVEL UP YOUR<br/><span class="text-red-600 italic">GAMING SETUP</span>
         </h2>
-        <p class="text-zinc-300 text-lg max-w-lg">
+        <p class="text-zinc-300 text-sm md:text-lg max-w-lg line-clamp-2 md:line-clamp-none">
           Dapatkan diskon hingga 50% untuk produk pilihan Logitech, Razer, dan SteelSeries.
         </p>
         <div>
-          <button class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:translate-y-[-2px] shadow-lg shadow-red-600/20">
+          <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all transform hover:translate-y-[-2px] shadow-lg shadow-red-600/20">
             Belanja Sekarang
           </button>
         </div>
@@ -76,7 +76,9 @@
             </div>
             <div class="p-5 space-y-2">
               <span class="text-xs font-bold text-red-500 uppercase tracking-widest">{{ product.category?.name || 'Gaming' }}</span>
-              <h4 class="text-lg font-bold text-white line-clamp-1 group-hover:text-red-500 transition-colors">{{ product.name }}</h4>
+              <router-link :to="'/product/' + product.id">
+                <h4 class="text-lg font-bold text-white line-clamp-1 group-hover:text-red-500 transition-colors cursor-pointer">{{ product.name }}</h4>
+              </router-link>
               <p class="text-zinc-500 text-sm line-clamp-2">{{ product.description }}</p>
               <div class="pt-4 flex items-center justify-between">
                 <span class="text-xl font-black text-white">Rp {{ formatPrice(product.price) }}</span>
@@ -102,7 +104,9 @@
             </div>
             <div class="flex-1 flex flex-col justify-between py-1">
               <div>
-                <h4 class="font-bold text-white line-clamp-1">{{ product.name }}</h4>
+                <router-link :to="'/product/' + product.id">
+                  <h4 class="font-bold text-white line-clamp-1 hover:text-red-500 transition-colors cursor-pointer">{{ product.name }}</h4>
+                </router-link>
                 <p class="text-red-500 font-bold">Rp {{ formatPrice(product.price) }}</p>
               </div>
               <button 
@@ -119,15 +123,15 @@
     </div>
 
     <!-- AI Chat CTA -->
-    <div class="bg-gradient-to-r from-zinc-900 to-red-950/20 border border-zinc-800 rounded-3xl p-12 flex flex-col md:flex-row items-center justify-between gap-12 shadow-2xl">
-      <div class="space-y-4">
-        <h2 class="text-4xl font-black text-white leading-tight">Bingung Pilih Gear?<br/><span class="text-red-600 italic">Tanyakan AI Kami!</span></h2>
-        <p class="text-zinc-400 text-lg max-w-md">Dapatkan rekomendasi gaming gear yang dipersonalisasi sesuai budget dan kebutuhanmu dalam hitungan detik.</p>
-        <router-link to="/chat" class="inline-flex items-center gap-3 bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-zinc-200 transition-colors shadow-xl">
+    <div class="bg-gradient-to-r from-zinc-900 to-red-950/20 border border-zinc-800 rounded-3xl p-6 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12 shadow-2xl">
+      <div class="space-y-4 text-center lg:text-left">
+        <h2 class="text-3xl md:text-4xl font-black text-white leading-tight uppercase">Bingung Pilih Gear?<br/><span class="text-red-600 italic">Tanyakan AI Kami!</span></h2>
+        <p class="text-zinc-400 text-base md:text-lg max-w-md mx-auto lg:mx-0">Dapatkan rekomendasi gaming gear yang dipersonalisasi sesuai budget dan kebutuhanmu dalam hitungan detik.</p>
+        <router-link to="/chat" class="inline-flex items-center gap-3 bg-white text-black px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-zinc-200 transition-colors shadow-xl">
           <MessageSquare class="w-6 h-6" /> Chat Sekarang
         </router-link>
       </div>
-      <div class="w-full md:max-w-sm aspect-square bg-zinc-800/50 rounded-2xl flex items-center justify-center p-8 border border-zinc-700/50 relative overflow-hidden">
+      <div class="w-full max-w-[280px] md:max-w-sm aspect-square bg-zinc-800/50 rounded-2xl flex items-center justify-center p-6 md:p-8 border border-zinc-700/50 relative overflow-hidden">
         <div class="absolute -right-12 -top-12 w-48 h-48 bg-red-600/10 blur-3xl rounded-full"></div>
         <div class="absolute -left-12 -bottom-12 w-48 h-48 bg-blue-600/5 blur-3xl rounded-full"></div>
         <div class="relative z-10 space-y-4">

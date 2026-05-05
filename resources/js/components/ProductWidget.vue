@@ -3,9 +3,11 @@
     <div v-if="isNewArrival" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter z-10 animate-pulse">
       New Arrival
     </div>
-    <img :src="product.image_url" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
+    <img :src="product.image_url" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" @click="$router.push('/product/' + product.id)" />
     <div class="p-4">
-      <h3 class="text-lg font-bold text-white">{{ product.name }}</h3>
+      <router-link :to="'/product/' + product.id">
+        <h3 class="text-lg font-bold text-white hover:text-red-500 transition-colors cursor-pointer">{{ product.name }}</h3>
+      </router-link>
       <p class="text-zinc-400 text-sm mt-1 line-clamp-2">{{ product.description }}</p>
       <div class="mt-4 flex items-center justify-between">
         <span class="text-xl font-bold text-red-500">Rp {{ formatPrice(product.price) }}</span>
