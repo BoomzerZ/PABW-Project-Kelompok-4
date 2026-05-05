@@ -125,7 +125,10 @@ class ProductSeeder extends Seeder
         foreach ($categories as $categoryName => $products) {
             $category = Category::firstOrCreate(['name' => $categoryName]);
             foreach ($products as $productData) {
-                $category->products()->create($productData);
+                Product::updateOrCreate(
+                    ['name' => $productData['name']],
+                    array_merge($productData, ['category_id' => $category->id])
+                );
             }
         }
     }
