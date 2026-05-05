@@ -21,6 +21,14 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
+        $product = \App\Models\Product::findOrFail($request->product_id);
+
+        if ($request->quantity > $product->stock) {
+            return response()->json([
+                'message' => "Insufficient stock for {$product->name}. Available: {$product->stock}"
+            ], 400);
+        }
+
         $cartItem = Cart::updateOrCreate(
             [
                 'user_id' => $request->user()->id,

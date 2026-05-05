@@ -19,7 +19,7 @@ Selamat datang di projek PABW Marketplace AI. Projek ini adalah platform e-comme
 ## Panduan Cepat Menjalankan Projek
 Untuk petunjuk langkah-demi-langkah cara menginstall dan menjalankan projek ini di komputer Anda, silakan baca:
 
-PANDUAN INSTALASI (INSTALLATION.md): INSTALLATION.md
+PANDUAN INSTALASI (INSTALLATION.md): [INSTALLATION.md](INSTALLATION.md)
 
 ## Akun Demo
 - Admin: admin@pabw.com | password

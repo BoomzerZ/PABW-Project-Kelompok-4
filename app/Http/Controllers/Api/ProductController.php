@@ -54,7 +54,13 @@ class ProductController extends Controller
 
         // 5. Pagination (default 12 items per page)
         $perPage = $request->get('per_page', 12);
-        return response()->json($query->paginate($perPage));
+        $products = $query->paginate($perPage);
+
+        $products->each(function($product) {
+            $product->append('average_rating');
+        });
+
+        return response()->json($products);
     }
 
     /**
@@ -62,11 +68,13 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with('category')->find($id);
+        $product = Product::with(['category', 'reviews.user'])->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
         }
+
+        $product->append('average_rating');
 
         return response()->json($product);
     }

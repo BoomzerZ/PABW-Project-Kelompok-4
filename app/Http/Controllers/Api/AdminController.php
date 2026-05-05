@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -86,13 +87,19 @@ class AdminController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            'image_url' => 'nullable|url',
+            'image_url' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'switch_type' => 'nullable|string',
             'dpi' => 'nullable|integer',
             'connectivity' => 'nullable|string',
             'sensor' => 'nullable|string',
             'weight' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $validated['image_url'] = Storage::disk('public')->url($path);
+        }
 
         $product = Product::create($validated);
 
@@ -112,7 +119,8 @@ class AdminController extends Controller
             'price' => 'numeric|min:0',
             'stock' => 'integer|min:0',
             'category_id' => 'exists:categories,id',
-            'image_url' => 'nullable|url',
+            'image_url' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'switch_type' => 'nullable|string',
             'dpi' => 'nullable|integer',
             'connectivity' => 'nullable|string',
@@ -120,9 +128,40 @@ class AdminController extends Controller
             'weight' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('image')) {
+            // Delete old image if it was a local file
+            if ($product->image_url && str_contains($product->image_url, '/storage/products/')) {
+                $oldPath = 'products/' . basename($product->image_url);
+                Storage::disk('public')->delete($oldPath);
+            }
+            
+            $path = $request->file('image')->store('products', 'public');
+            $validated['image_url'] = Storage::disk('public')->url($path);
+        }
+
         $product->update($validated);
 
         return response()->json($product);
+    }
+
+    /**
+     * Upload a product image.
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            return response()->json([
+                'url' => Storage::disk('public')->url($path),
+                'path' => $path
+            ]);
+        }
+
+        return response()->json(['message' => 'No image uploaded'], 400);
     }
 
     /**

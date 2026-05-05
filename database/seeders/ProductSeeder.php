@@ -20,7 +20,7 @@ class ProductSeeder extends Seeder
                     'description' => 'Mechanical gaming keyboard with swappable switches.',
                     'price' => 1999000.00,
                     'stock' => 15,
-                    'image_url' => 'https://example.com/images/gprox.jpg',
+                    'image_url' => 'https://resource.logitechg.com/w_1000,c_limit,q_auto,f_auto,dpr_2.0/d_transparent.gif/content/dam/gaming/en/products/pro-x-keyboard/pro-x-keyboard-gallery-1.png?v=1',
                     'switch_type' => 'GX Blue Clicky',
                     'connectivity' => 'Wired',
                     'weight' => '980g'
@@ -30,7 +30,7 @@ class ProductSeeder extends Seeder
                     'description' => 'Full-size mechanical keyboard with Razer Chroma RGB.',
                     'price' => 3200000.00,
                     'stock' => 8,
-                    'image_url' => 'https://example.com/images/blackwidow.jpg',
+                    'image_url' => 'https://assets2.razerzone.com/images/pnx.rvq_06a090e5444101e4/razer-blackwidow-v4-pro-7-1200x630.jpg',
                     'switch_type' => 'Razer Green Mechanical',
                     'connectivity' => 'Wired',
                     'weight' => '1120g'
@@ -52,7 +52,7 @@ class ProductSeeder extends Seeder
                     'description' => 'Ultra-lightweight wireless gaming mouse.',
                     'price' => 2199000.00,
                     'stock' => 20,
-                    'image_url' => 'https://example.com/images/superlight.jpg',
+                    'image_url' => 'https://resource.logitechg.com/w_1000,c_limit,q_auto,f_auto,dpr_2.0/d_transparent.gif/content/dam/gaming/en/products/pro-x-superlight-2/gallery/pro-x-superlight-2-gallery-1-black.png?v=1',
                     'dpi' => 32000,
                     'connectivity' => 'Wireless (LIGHTSPEED)',
                     'sensor' => 'HERO 2',
@@ -63,7 +63,7 @@ class ProductSeeder extends Seeder
                     'description' => 'Ergonomic wireless gaming mouse for esports.',
                     'price' => 2350000.00,
                     'stock' => 12,
-                    'image_url' => 'https://example.com/images/deathadder.jpg',
+                    'image_url' => 'https://assets2.razerzone.com/images/pnx.rvq_06a090e5444101e4/razer-deathadder-v3-pro-1200x630.jpg',
                     'dpi' => 30000,
                     'connectivity' => 'Wireless (HyperSpeed)',
                     'sensor' => 'Focus Pro 30K Optical',
@@ -125,7 +125,10 @@ class ProductSeeder extends Seeder
         foreach ($categories as $categoryName => $products) {
             $category = Category::firstOrCreate(['name' => $categoryName]);
             foreach ($products as $productData) {
-                $category->products()->create($productData);
+                Product::updateOrCreate(
+                    ['name' => $productData['name']],
+                    array_merge($productData, ['category_id' => $category->id])
+                );
             }
         }
     }

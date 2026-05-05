@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col h-[calc(100vh-4rem)]">
-    <div ref="scrollContainer" class="flex-1 overflow-y-auto space-y-6 pb-4 pr-4 custom-scrollbar">
+  <div class="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)]">
+    <div ref="scrollContainer" class="flex-1 overflow-y-auto space-y-6 pb-4 pr-2 md:pr-4 custom-scrollbar">
       <div v-for="(msg, index) in messages" :key="index" :class="['flex', msg.role === 'user' ? 'justify-end' : 'justify-start']">
         <div :class="[
           'max-w-[85%] rounded-2xl p-4 shadow-lg transition-all duration-300', 
