@@ -4,6 +4,9 @@ import Chat from '../views/Chat.vue';
 import Cart from '../views/Cart.vue';
 import Orders from '../views/Orders.vue';
 import OrderDetails from '../views/OrderDetails.vue';
+import Wishlist from '../views/Wishlist.vue';
+import Notifications from '../views/Notifications.vue';
+import ProductDetail from '../views/ProductDetail.vue';
 import Profile from '../views/Profile.vue';
 import Settings from '../views/Settings.vue';
 import Login from '../views/Login.vue';
@@ -24,6 +27,9 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/chat', name: 'Chat', component: Chat },
   { path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true } },
+  { path: '/wishlist', name: 'Wishlist', component: Wishlist, meta: { requiresAuth: true } },
+  { path: '/notifications', name: 'Notifications', component: Notifications, meta: { requiresAuth: true } },
+  { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
   { path: '/orders', name: 'Orders', component: Orders, meta: { requiresAuth: true } },
   { path: '/orders/:id', name: 'OrderDetails', component: OrderDetails, meta: { requiresAuth: true } },
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },

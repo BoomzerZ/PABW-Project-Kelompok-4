@@ -6,80 +6,86 @@
       <Loader2 class="w-10 h-10 animate-spin text-red-600" />
     </div>
 
-    <div v-else-if="cartItems.length > 0" class="space-y-6">
-      <div v-for="item in cartItems" :key="item.id" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex items-center gap-6">
-        <img :src="item.product.image_url" :alt="item.product.name" class="w-24 h-24 object-cover rounded-lg" />
-        <div class="flex-1">
-          <h3 class="text-xl font-bold">{{ item.product.name }}</h3>
-          <p class="text-zinc-400 text-sm">Jumlah: {{ item.quantity }}</p>
-          <p class="text-red-500 font-bold mt-1">Rp {{ formatPrice(item.product.price * item.quantity) }}</p>
+    <div v-else-if="cartItems.length > 0" class="space-y-4 md:space-y-6">
+      <div v-for="item in cartItems" :key="item.id" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 md:p-6 flex items-center gap-4 md:gap-6">
+        <img :src="item.product.image_url" :alt="item.product.name" class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg" />
+        <div class="flex-1 min-w-0">
+          <h3 class="text-lg md:text-xl font-bold truncate">{{ item.product.name }}</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1">
+            <p class="text-zinc-400 text-sm">Jumlah: {{ item.quantity }}</p>
+            <p v-if="item.product.stock < item.quantity" class="text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded uppercase tracking-tighter animate-pulse self-start">
+              Stok Kurang (Tersedia: {{ item.product.stock }})
+            </p>
+            <p v-else class="text-xs text-zinc-500 font-medium italic">Tersedia: {{ item.product.stock }}</p>
+          </div>
+          <p class="text-red-500 font-bold mt-1 text-sm md:text-base">Rp {{ formatPrice(item.product.price * item.quantity) }}</p>
         </div>
-        <button @click="removeItem(item.id)" class="text-zinc-500 hover:text-red-500 transition-colors">
-          <Trash2 class="w-6 h-6" />
+        <button @click="removeItem(item.id)" class="text-zinc-500 hover:text-red-500 transition-colors flex-shrink-0">
+          <Trash2 class="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
 
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mt-10 space-y-6">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 mt-6 md:mt-10 space-y-6">
         <!-- Coupon Section -->
         <div>
-          <label class="block text-sm font-medium text-zinc-400 mb-2">Punya Kode Promo?</label>
+          <label class="block text-sm font-medium text-zinc-400 mb-2 uppercase tracking-widest text-[10px]">Punya Kode Promo?</label>
           <div v-if="!appliedCoupon" class="flex gap-2">
             <div class="relative flex-1">
-              <Ticket class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+              <Ticket class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input 
                 v-model="couponCode"
                 type="text" 
-                placeholder="Masukkan kode kupon"
-                class="w-full bg-black border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-red-600 transition-colors"
+                placeholder="Kode kupon"
+                class="w-full bg-black border border-zinc-800 rounded-xl py-3 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-red-600 transition-colors uppercase"
                 @keyup.enter="handleApplyCoupon"
               />
             </div>
             <button 
               @click="handleApplyCoupon"
               :disabled="couponLoading || !couponCode"
-              class="bg-zinc-800 hover:bg-zinc-700 text-white px-6 rounded-xl font-bold transition-colors disabled:opacity-50"
+              class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 md:px-6 rounded-xl font-bold text-sm transition-colors disabled:opacity-50"
             >
-              {{ couponLoading ? '...' : 'Gunakan' }}
+              {{ couponLoading ? '...' : 'Pakai' }}
             </button>
           </div>
           
-          <div v-else class="flex items-center justify-between bg-red-900/20 border border-red-900/50 rounded-xl p-4">
+          <div v-else class="flex items-center justify-between bg-red-900/10 border border-red-900/30 rounded-xl p-3 md:p-4">
             <div class="flex items-center gap-3">
               <Ticket class="w-5 h-5 text-red-500" />
               <div>
-                <p class="font-bold text-red-500">{{ appliedCoupon.code }}</p>
-                <p class="text-xs text-red-400/80 italic">Kupon berhasil digunakan</p>
+                <p class="font-bold text-red-500 text-sm md:text-base">{{ appliedCoupon.code }}</p>
+                <p class="text-[10px] text-red-400/80 italic">Kupon berhasil digunakan</p>
               </div>
             </div>
-            <button @click="removeCoupon" class="text-zinc-400 hover:text-white transition-colors">
-              <X class="w-5 h-5" />
+            <button @click="removeCoupon" class="text-zinc-500 hover:text-white transition-colors">
+              <X class="w-4 h-4" />
             </button>
           </div>
           
-          <p v-if="couponError" class="text-red-500 text-sm mt-2">{{ couponError }}</p>
+          <p v-if="couponError" class="text-red-500 text-xs mt-2 font-medium">{{ couponError }}</p>
         </div>
 
         <div class="border-t border-zinc-800 pt-6 space-y-4">
-          <div class="flex justify-between items-center text-zinc-400">
+          <div class="flex justify-between items-center text-zinc-400 text-sm">
             <span>Subtotal</span>
             <span>Rp {{ formatPrice(subtotal) }}</span>
           </div>
-          <div v-if="appliedCoupon" class="flex justify-between items-center text-green-500">
+          <div v-if="appliedCoupon" class="flex justify-between items-center text-green-500 text-sm">
             <span>Diskon</span>
             <span>- Rp {{ formatPrice(discount) }}</span>
           </div>
-          <div class="flex justify-between items-center pt-2">
-            <span class="text-xl font-bold text-white">Total Pembayaran</span>
-            <span class="text-3xl font-bold text-red-500">Rp {{ formatPrice(totalPrice) }}</span>
+          <div class="flex justify-between items-center pt-2 border-t border-zinc-800/50">
+            <span class="text-base md:text-xl font-bold text-white uppercase tracking-tighter">Total</span>
+            <span class="text-2xl md:text-3xl font-black text-red-500">Rp {{ formatPrice(totalPrice) }}</span>
           </div>
         </div>
 
         <button 
           @click="handleCheckout"
-          :disabled="checkoutLoading"
-          class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-50"
+          :disabled="checkoutLoading || !isStockValid"
+          class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 uppercase tracking-widest"
         >
-          {{ checkoutLoading ? 'Memproses...' : 'Checkout Sekarang' }}
+          {{ checkoutLoading ? 'Memproses...' : (isStockValid ? 'Checkout Sekarang' : 'Stok Tidak Mencukupi') }}
         </button>
       </div>
     </div>
@@ -118,6 +124,10 @@ const discount = computed(() => {
 
 const totalPrice = computed(() => {
   return subtotal.value - discount.value;
+});
+
+const isStockValid = computed(() => {
+  return cartItems.value.every(item => item.product.stock >= item.quantity);
 });
 
 const formatPrice = (price) => {
@@ -175,7 +185,7 @@ const removeItem = async (id) => {
 };
 
 const handleCheckout = async () => {
-  if (cartItems.value.length === 0) return;
+  if (cartItems.value.length === 0 || !isStockValid.value) return;
   
   checkoutLoading.value = true;
   try {

@@ -99,8 +99,25 @@
             </div>
 
             <div class="md:col-span-2 space-y-2">
-              <label class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Image URL</label>
-              <input v-model="form.image_url" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition-colors" />
+              <label class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Gambar Produk</label>
+              <div class="flex gap-4">
+                <div class="flex-1 space-y-2">
+                  <div class="relative group">
+                    <input v-model="form.image_url" placeholder="URL Gambar atau unggah file..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition-colors" />
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                      <label class="p-2 hover:bg-zinc-700 rounded-lg cursor-pointer transition-colors text-zinc-400 hover:text-white" title="Unggah Gambar">
+                        <Upload v-if="!uploadLoading" class="w-5 h-5" />
+                        <Loader2 v-else class="w-5 h-5 animate-spin text-red-600" />
+                        <input type="file" class="hidden" accept="image/*" @change="handleFileUpload" :disabled="uploadLoading" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="w-20 h-20 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden flex items-center justify-center">
+                  <img v-if="form.image_url" :src="form.image_url" class="w-full h-full object-cover" />
+                  <ImageIcon v-else class="w-8 h-8 text-zinc-700" />
+                </div>
+              </div>
             </div>
             <div class="md:col-span-2 space-y-2">
               <label class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Deskripsi</label>
@@ -120,7 +137,7 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue';
-import { Plus, Edit3, Trash2, X, Loader2 } from 'lucide-vue-next';
+import { Plus, Edit3, Trash2, X, Loader2, Upload, Image as ImageIcon } from 'lucide-vue-next';
 import axios from 'axios';
 
 const products = ref([]);
@@ -128,6 +145,7 @@ const loading = ref(false);
 const showModal = ref(false);
 const editingProduct = ref(null);
 const saveLoading = ref(false);
+const uploadLoading = ref(false);
 
 const form = reactive({
   name: '',
@@ -142,6 +160,30 @@ const form = reactive({
   sensor: '',
   weight: ''
 });
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  uploadLoading.value = true;
+  try {
+    const res = await axios.post('/api/admin/products/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    form.image_url = res.data.url;
+    alert('Gambar berhasil diunggah!');
+  } catch (e) {
+    console.error('Upload failed:', e);
+    alert('Gagal mengunggah gambar. Pastikan formatnya benar.');
+  } finally {
+    uploadLoading.value = false;
+  }
+};
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
