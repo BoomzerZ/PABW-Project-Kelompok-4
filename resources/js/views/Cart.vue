@@ -11,7 +11,13 @@
         <img :src="item.product.image_url" :alt="item.product.name" class="w-24 h-24 object-cover rounded-lg" />
         <div class="flex-1">
           <h3 class="text-xl font-bold">{{ item.product.name }}</h3>
-          <p class="text-zinc-400 text-sm">Jumlah: {{ item.quantity }}</p>
+          <div class="flex items-center gap-4 mt-1">
+            <p class="text-zinc-400 text-sm">Jumlah: {{ item.quantity }}</p>
+            <p v-if="item.product.stock < item.quantity" class="text-xs font-black bg-red-600 text-white px-2 py-0.5 rounded uppercase tracking-tighter animate-pulse">
+              Stok Tidak Mencukupi (Tersedia: {{ item.product.stock }})
+            </p>
+            <p v-else class="text-xs text-zinc-500 font-medium">Tersedia: {{ item.product.stock }}</p>
+          </div>
           <p class="text-red-500 font-bold mt-1">Rp {{ formatPrice(item.product.price * item.quantity) }}</p>
         </div>
         <button @click="removeItem(item.id)" class="text-zinc-500 hover:text-red-500 transition-colors">
@@ -76,10 +82,10 @@
 
         <button 
           @click="handleCheckout"
-          :disabled="checkoutLoading"
+          :disabled="checkoutLoading || !isStockValid"
           class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-50"
         >
-          {{ checkoutLoading ? 'Memproses...' : 'Checkout Sekarang' }}
+          {{ checkoutLoading ? 'Memproses...' : (isStockValid ? 'Checkout Sekarang' : 'Stok Tidak Mencukupi') }}
         </button>
       </div>
     </div>
@@ -118,6 +124,10 @@ const discount = computed(() => {
 
 const totalPrice = computed(() => {
   return subtotal.value - discount.value;
+});
+
+const isStockValid = computed(() => {
+  return cartItems.value.every(item => item.product.stock >= item.quantity);
 });
 
 const formatPrice = (price) => {
@@ -175,7 +185,7 @@ const removeItem = async (id) => {
 };
 
 const handleCheckout = async () => {
-  if (cartItems.value.length === 0) return;
+  if (cartItems.value.length === 0 || !isStockValid.value) return;
   
   checkoutLoading.value = true;
   try {

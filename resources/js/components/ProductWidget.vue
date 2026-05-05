@@ -11,11 +11,11 @@
         <span class="text-xl font-bold text-red-500">Rp {{ formatPrice(product.price) }}</span>
         <button 
           @click="handleAddToCart"
-          :disabled="loading"
+          :disabled="loading || product.stock <= 0"
           class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
         >
           <ShoppingCart class="w-4 h-4" />
-          {{ loading ? '...' : 'Tambah' }}
+          {{ loading ? '...' : (product.stock > 0 ? 'Tambah' : 'Habis') }}
         </button>
       </div>
     </div>

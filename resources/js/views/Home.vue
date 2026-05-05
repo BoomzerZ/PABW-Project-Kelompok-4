@@ -65,7 +65,11 @@
               </div>
               <img :src="product.image_url" :alt="product.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                <button @click="addToCart(product)" class="bg-red-600 p-3 rounded-full text-white hover:bg-red-700 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl">
+                <button 
+                  @click="addToCart(product)" 
+                  :disabled="product.stock <= 0"
+                  class="bg-red-600 p-3 rounded-full text-white hover:bg-red-700 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <ShoppingCart class="w-6 h-6" />
                 </button>
               </div>
@@ -101,8 +105,12 @@
                 <h4 class="font-bold text-white line-clamp-1">{{ product.name }}</h4>
                 <p class="text-red-500 font-bold">Rp {{ formatPrice(product.price) }}</p>
               </div>
-              <button @click="addToCart(product)" class="text-zinc-400 hover:text-white flex items-center gap-2 text-sm transition-colors">
-                <Plus class="w-4 h-4" /> Tambah ke Keranjang
+              <button 
+                @click="addToCart(product)" 
+                :disabled="product.stock <= 0"
+                class="text-zinc-400 hover:text-white flex items-center gap-2 text-sm transition-colors disabled:opacity-50"
+              >
+                <Plus class="w-4 h-4" /> {{ product.stock > 0 ? 'Tambah ke Keranjang' : 'Stok Habis' }}
               </button>
             </div>
           </div>
