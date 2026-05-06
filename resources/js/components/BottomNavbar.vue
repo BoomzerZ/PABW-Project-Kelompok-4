@@ -33,8 +33,3 @@ const menuItems = [
 ];
 </script>
 
-<style scoped>
-.router-link-active {
-  @apply text-red-600;
-}
-</style>
