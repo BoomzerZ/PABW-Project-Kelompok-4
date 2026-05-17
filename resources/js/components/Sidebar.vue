@@ -66,7 +66,6 @@ const menuItems = [
   { name: 'Keranjang', path: '/cart', icon: ShoppingCart },
   { name: 'Riwayat Pesanan', path: '/orders', icon: ClipboardList },
   { name: 'Admin Panel', path: '/admin', icon: ShieldCheck, adminOnly: true },
-  { name: 'Profil', path: '/profile', icon: User },
   { name: 'Pengaturan', path: '/settings', icon: Settings },
 ];
 

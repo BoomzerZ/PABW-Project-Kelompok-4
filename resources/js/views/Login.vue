@@ -17,7 +17,7 @@
           <div>
             <label for="email-address" class="sr-only">Alamat Email</label>
             <input 
-              v-model="form.email" 
+              v-model.trim="form.email" 
               id="email-address" 
               name="email" 
               type="email" 
@@ -29,7 +29,7 @@
           <div>
             <label for="password" class="sr-only">Kata Sandi</label>
             <input 
-              v-model="form.password" 
+              v-model.trim="form.password" 
               id="password" 
               name="password" 
               type="password" 

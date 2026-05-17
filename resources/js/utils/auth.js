@@ -5,7 +5,9 @@ const token = localStorage.getItem('token');
 export const authState = reactive({
     user: null,
     token: token && token !== 'null' && token !== 'undefined' ? token : null,
-    isAuthenticated: !!(token && token !== 'null' && token !== 'undefined')
+    isAuthenticated: !!(token && token !== 'null' && token !== 'undefined'),
+    loadingUser: false,
+    userLoaded: false
 });
 
 export const isAdmin = computed(() => authState.user?.is_admin === 1 || authState.user?.is_admin === true);
@@ -78,17 +80,28 @@ export const logout = async () => {
         authState.user = null;
         authState.token = null;
         authState.isAuthenticated = false;
+        authState.loadingUser = false;
+        authState.userLoaded = true;
         localStorage.removeItem('token');
         delete axios.defaults.headers.common['Authorization'];
     }
 };
 
 export const fetchUser = async () => {
-    if (!authState.token) return;
+    if (!authState.token) {
+        authState.userLoaded = true;
+        return;
+    }
+    if (authState.loadingUser) return;
+    authState.loadingUser = true;
     try {
         const response = await axios.get('/api/user');
         authState.user = response.data;
+        authState.userLoaded = true;
     } catch (error) {
-        logout();
+        await logout();
+        authState.userLoaded = true;
+    } finally {
+        authState.loadingUser = false;
     }
 };

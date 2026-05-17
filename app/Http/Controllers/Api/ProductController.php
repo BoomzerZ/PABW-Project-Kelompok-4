@@ -13,7 +13,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::with(['category', 'images']);
 
         // 1. Robust Search logic
         if ($request->filled('search')) {
@@ -68,7 +68,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'reviews.user'])->find($id);
+        $product = Product::with(['category', 'reviews.user', 'images'])->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
@@ -84,7 +84,7 @@ class ProductController extends Controller
      */
     public function aiContext()
     {
-        $products = Product::with('category')->get();
+        $products = Product::with(['category', 'images'])->get();
         return response()->json($products);
     }
 }

@@ -91,9 +91,12 @@ class ChatController extends Controller
 
         // 5. Call Ollama API
         try {
-            $ollamaHost = env('OLLAMA_HOST', 'http://localhost:11434');
-            $response = Http::timeout(15)->post("{$ollamaHost}/api/generate", [
-                'model' => 'qwen2.5',
+            $ollamaUrl = env('OLLAMA_URL', 'http://localhost:11434');
+            $ollamaModel = env('OLLAMA_MODEL', 'qwen2.5:7b');
+            $ollamaTimeout = env('OLLAMA_TIMEOUT', 120);
+            
+            $response = Http::timeout((int)$ollamaTimeout)->post("{$ollamaUrl}/api/generate", [
+                'model' => $ollamaModel,
                 'prompt' => "Context: {$context}\n\nUser: {$userMessage}\nAI:",
                 'stream' => false,
             ]);
@@ -137,8 +140,8 @@ class ChatController extends Controller
     public function healthCheck()
     {
         try {
-            $ollamaHost = env('OLLAMA_HOST', 'http://localhost:11434');
-            $response = Http::timeout(5)->get("{$ollamaHost}/api/tags");
+            $ollamaUrl = env('OLLAMA_URL', 'http://localhost:11434');
+            $response = Http::timeout(5)->get("{$ollamaUrl}/api/tags");
             
             if ($response->successful()) {
                 return response()->json([

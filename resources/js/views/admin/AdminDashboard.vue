@@ -52,7 +52,21 @@
 
       <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
         <h2 class="text-xl font-bold mb-4">Produk Terlaris</h2>
-        <p class="text-zinc-400 text-sm italic">Fitur ini dalam pengembangan.</p>
+        <div v-if="topProducts.length" class="space-y-4">
+          <div v-for="product in topProducts" :key="product.id" class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <img :src="product.image_url" class="w-12 h-12 rounded object-cover" />
+              <div class="flex flex-col">
+                <span class="font-semibold text-white">{{ product.name }}</span>
+                <span class="text-xs text-zinc-500">{{ product.totalQty }} terjual</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-bold text-red-500">Rp {{ formatPrice(product.totalRevenue) }}</div>
+            </div>
+          </div>
+        </div>
+        <p v-else class="text-zinc-400 text-sm italic">Belum ada data penjualan.</p>
       </div>
     </div>
   </div>
@@ -69,6 +83,7 @@ const stats = ref({
   totalCoupons: 0
 });
 const recentOrders = ref([]);
+const topProducts = ref([]);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
@@ -87,7 +102,7 @@ const fetchData = async () => {
   try {
     const [ordersRes, productsRes, couponsRes] = await Promise.all([
       axios.get('/api/admin/orders'),
-      axios.get('/api/products'),
+      axios.get('/api/admin/products'),
       axios.get('/api/admin/coupons')
     ]);
 
@@ -99,10 +114,34 @@ const fetchData = async () => {
       .filter(o => o.status === 'completed')
       .reduce((sum, o) => sum + parseFloat(o.total_price), 0);
     
-    // Check if productsRes.data is paginated
-    stats.value.totalProducts = productsRes.data.total || productsRes.data.length || (productsRes.data.data ? productsRes.data.data.length : 0);
+    stats.value.totalProducts = Array.isArray(productsRes.data)
+      ? productsRes.data.length
+      : (productsRes.data.data ? productsRes.data.data.length : 0);
     
     stats.value.totalCoupons = couponsRes.data.length;
+
+    const salesMap = new Map();
+    orders
+      .filter((order) => order.status === 'completed')
+      .forEach((order) => {
+        (order.items || []).forEach((item) => {
+          if (!item.product) return;
+          const existing = salesMap.get(item.product_id) || {
+            id: item.product_id,
+            name: item.product.name,
+            image_url: item.product.image_url,
+            totalQty: 0,
+            totalRevenue: 0
+          };
+          existing.totalQty += item.quantity;
+          existing.totalRevenue += parseFloat(item.price) * item.quantity;
+          salesMap.set(item.product_id, existing);
+        });
+      });
+
+    topProducts.value = Array.from(salesMap.values())
+      .sort((a, b) => b.totalQty - a.totalQty)
+      .slice(0, 5);
   } catch (error) {
     console.error('Failed to fetch dashboard data', error);
   }

@@ -33,6 +33,11 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
     public function getAverageRatingAttribute()
     {
         return $this->reviews()->avg('rating') ?: 0;

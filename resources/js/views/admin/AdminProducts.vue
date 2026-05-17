@@ -120,6 +120,25 @@
               </div>
             </div>
             <div class="md:col-span-2 space-y-2">
+              <label class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Gambar Tambahan</label>
+              <div class="flex items-center gap-3">
+                <label class="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors">
+                  Unggah Beberapa Gambar
+                  <input type="file" class="hidden" accept="image/*" multiple @change="handleAdditionalImagesUpload" :disabled="uploadLoading" />
+                </label>
+                <span class="text-xs text-zinc-500">Maks 2MB per gambar</span>
+              </div>
+              <div v-if="form.image_urls.length" class="grid grid-cols-4 gap-3">
+                <div v-for="(img, index) in form.image_urls" :key="img + index" class="relative group">
+                  <img :src="img" class="w-full h-20 object-cover rounded-lg border border-zinc-800" />
+                  <button type="button" @click="removeAdditionalImage(index)" class="absolute top-1 right-1 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                    Hapus
+                  </button>
+                </div>
+              </div>
+              <p v-else class="text-xs text-zinc-600">Belum ada gambar tambahan.</p>
+            </div>
+            <div class="md:col-span-2 space-y-2">
               <label class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Deskripsi</label>
               <textarea v-model="form.description" rows="3" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition-colors"></textarea>
             </div>
@@ -153,6 +172,7 @@ const form = reactive({
   stock: 0,
   category_id: 1,
   image_url: '',
+  image_urls: [],
   description: '',
   switch_type: '',
   dpi: null,
@@ -185,6 +205,36 @@ const handleFileUpload = async (event) => {
   }
 };
 
+const handleAdditionalImagesUpload = async (event) => {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+
+  uploadLoading.value = true;
+  try {
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await axios.post('/api/admin/products/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      form.image_urls.push(res.data.url);
+    }
+    alert('Gambar tambahan berhasil diunggah!');
+  } catch (e) {
+    console.error('Upload failed:', e);
+    alert('Gagal mengunggah gambar tambahan. Pastikan formatnya benar.');
+  } finally {
+    uploadLoading.value = false;
+    event.target.value = '';
+  }
+};
+
+const removeAdditionalImage = (index) => {
+  form.image_urls.splice(index, 1);
+};
+
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
 };
@@ -192,7 +242,7 @@ const formatPrice = (price) => {
 const fetchProducts = async () => {
   loading.value = true;
   try {
-    const res = await axios.get('/api/products');
+    const res = await axios.get('/api/admin/products');
     products.value = res.data.data || res.data;
   } catch (e) {
     console.error('Failed to fetch products:', e);
@@ -210,6 +260,7 @@ const openCreateModal = () => {
     stock: 0, 
     category_id: 1, 
     image_url: '', 
+    image_urls: [],
     description: '',
     switch_type: '',
     dpi: null,
@@ -222,7 +273,10 @@ const openCreateModal = () => {
 
 const openEditModal = (product) => {
   editingProduct.value = product;
-  Object.assign(form, product);
+  Object.assign(form, {
+    ...product,
+    image_urls: (product.images || []).map((img) => img.image_url)
+  });
   showModal.value = true;
 };
 

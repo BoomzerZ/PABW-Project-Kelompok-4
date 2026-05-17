@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -73,7 +74,7 @@ class AdminController extends Controller
      */
     public function listProducts()
     {
-        return response()->json(Product::with('category')->get());
+        return response()->json(Product::with(['category', 'images'])->get());
     }
 
     /**
@@ -88,7 +89,11 @@ class AdminController extends Controller
             'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'image_url' => 'nullable|string',
+            'image_urls' => 'nullable|array',
+            'image_urls.*' => 'string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'switch_type' => 'nullable|string',
             'dpi' => 'nullable|integer',
             'connectivity' => 'nullable|string',
@@ -102,6 +107,22 @@ class AdminController extends Controller
         }
 
         $product = Product::create($validated);
+
+        $additionalUrls = $validated['image_urls'] ?? [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('products', 'public');
+                $additionalUrls[] = Storage::disk('public')->url($path);
+            }
+        }
+
+        foreach (array_values($additionalUrls) as $index => $url) {
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_url' => $url,
+                'sort_order' => $index
+            ]);
+        }
 
         return response()->json($product, 201);
     }
@@ -120,7 +141,11 @@ class AdminController extends Controller
             'stock' => 'integer|min:0',
             'category_id' => 'exists:categories,id',
             'image_url' => 'nullable|string',
+            'image_urls' => 'nullable|array',
+            'image_urls.*' => 'string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'switch_type' => 'nullable|string',
             'dpi' => 'nullable|integer',
             'connectivity' => 'nullable|string',
@@ -140,6 +165,32 @@ class AdminController extends Controller
         }
 
         $product->update($validated);
+
+        if ($request->has('image_urls') || $request->hasFile('images')) {
+            foreach ($product->images as $image) {
+                if ($image->image_url && str_contains($image->image_url, '/storage/products/')) {
+                    $oldPath = 'products/' . basename($image->image_url);
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $image->delete();
+            }
+
+            $additionalUrls = $validated['image_urls'] ?? [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    $additionalUrls[] = Storage::disk('public')->url($path);
+                }
+            }
+
+            foreach (array_values($additionalUrls) as $index => $url) {
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_url' => $url,
+                    'sort_order' => $index
+                ]);
+            }
+        }
 
         return response()->json($product);
     }
@@ -170,6 +221,10 @@ class AdminController extends Controller
     public function destroyProduct($id)
     {
         $product = Product::findOrFail($id);
+        if ($product->image_url && str_contains($product->image_url, '/storage/products/')) {
+            $oldPath = 'products/' . basename($product->image_url);
+            Storage::disk('public')->delete($oldPath);
+        }
         $product->delete();
 
         return response()->json(['message' => 'Product deleted successfully']);
@@ -195,8 +250,14 @@ class AdminController extends Controller
             'status' => 'required|in:pending,processing,completed',
         ]);
 
-        $order->status = $request->status;
-        $order->save();
+        $order->load('items.product');
+
+        try {
+            $order->status = $request->status;
+            $order->save();
+        } catch (\Throwable $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
 
         return response()->json($order);
     }

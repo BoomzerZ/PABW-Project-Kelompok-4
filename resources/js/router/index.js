@@ -7,7 +7,6 @@ import OrderDetails from '../views/OrderDetails.vue';
 import Wishlist from '../views/Wishlist.vue';
 import Notifications from '../views/Notifications.vue';
 import ProductDetail from '../views/ProductDetail.vue';
-import Profile from '../views/Profile.vue';
 import Settings from '../views/Settings.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
@@ -19,9 +18,7 @@ import AdminProducts from '../views/admin/AdminProducts.vue';
 import AdminOrders from '../views/admin/AdminOrders.vue';
 import AdminCoupons from '../views/admin/AdminCoupons.vue';
 
-import { authState } from '../utils/auth';
-
-import { isAdmin } from '../utils/auth';
+import { authState, fetchUser, isAdmin } from '../utils/auth';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -32,8 +29,8 @@ const routes = [
   { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
   { path: '/orders', name: 'Orders', component: Orders, meta: { requiresAuth: true } },
   { path: '/orders/:id', name: 'OrderDetails', component: OrderDetails, meta: { requiresAuth: true } },
-  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
-  { path: '/settings', name: 'Settings', component: Settings },
+  { path: '/profile', redirect: '/settings' },
+  { path: '/settings', name: 'Settings', component: Settings, meta: { requiresAuth: true } },
   { path: '/login', name: 'Login', component: Login, meta: { guestOnly: true, hideSidebar: true } },
   { path: '/register', name: 'Register', component: Register, meta: { guestOnly: true, hideSidebar: true } },
   
@@ -56,7 +53,11 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  if (authState.token && !authState.userLoaded && !authState.loadingUser) {
+    await fetchUser();
+  }
+
   if (to.meta.requiresAuth && !authState.isAuthenticated) {
     next('/login');
   } else if (to.meta.requiresAdmin && !isAdmin.value) {

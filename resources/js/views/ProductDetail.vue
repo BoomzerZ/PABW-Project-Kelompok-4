@@ -9,17 +9,19 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Gallery -->
         <div class="space-y-4">
-          <div class="aspect-square bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group">
-            <img :src="product.image_url" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+          <div class="aspect-square bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group cursor-zoom-in" @click="openGallery">
+            <img :src="activeImage" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           </div>
-          <!-- Thumbnails placeholder -->
           <div class="grid grid-cols-4 gap-4">
-            <div class="aspect-square bg-zinc-900 border border-red-600 rounded-xl overflow-hidden cursor-pointer">
-              <img :src="product.image_url" class="w-full h-full object-cover" />
-            </div>
-            <div v-for="i in 3" :key="i" class="aspect-square bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
-              <img :src="product.image_url" class="w-full h-full object-cover grayscale" />
-            </div>
+            <button
+              v-for="(img, index) in galleryImages"
+              :key="img + index"
+              type="button"
+              @click="setActiveImage(index)"
+              :class="['aspect-square bg-zinc-900 rounded-xl overflow-hidden transition-opacity cursor-pointer border', activeIndex === index ? 'border-red-600' : 'border-zinc-800 opacity-70 hover:opacity-100']"
+            >
+              <img :src="img" class="w-full h-full object-cover" />
+            </button>
           </div>
         </div>
 
@@ -171,6 +173,22 @@
         </div>
       </div>
 
+      <!-- Gallery Modal -->
+      <div v-if="showGallery" class="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4">
+        <button @click="closeGallery" class="absolute top-6 right-6 text-zinc-300 hover:text-white">
+          <X class="w-8 h-8" />
+        </button>
+        <button @click="prevImage" class="absolute left-6 text-zinc-300 hover:text-white">
+          <ChevronLeft class="w-8 h-8" />
+        </button>
+        <button @click="nextImage" class="absolute right-6 text-zinc-300 hover:text-white">
+          <ChevronRight class="w-8 h-8" />
+        </button>
+        <div class="max-w-5xl w-full">
+          <img :src="activeImage" :alt="product?.name" class="w-full max-h-[80vh] object-contain rounded-2xl" />
+        </div>
+      </div>
+
       <!-- Similar Products -->
       <section class="space-y-8 mt-12">
         <h2 class="text-2xl font-black border-l-4 border-red-600 pl-4 uppercase tracking-wider">Produk Serupa</h2>
@@ -195,7 +213,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   Loader2, 
@@ -204,8 +222,8 @@ import {
   Heart, 
   CheckCircle2, 
   XCircle,
-  Plus,
-  Minus,
+  ChevronLeft,
+  ChevronRight,
   X
 } from 'lucide-vue-next';
 import axios from 'axios';
@@ -219,10 +237,15 @@ const loading = ref(true);
 const cartLoading = ref(false);
 const quantity = ref(1);
 const showReviewModal = ref(false);
+const showGallery = ref(false);
 const reviewForm = ref({
   rating: 5,
   comment: ''
 });
+
+const galleryImages = ref([]);
+const activeIndex = ref(0);
+const activeImage = computed(() => galleryImages.value[activeIndex.value] || product.value?.image_url || '');
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
@@ -233,6 +256,11 @@ const fetchProduct = async () => {
   try {
     const response = await axios.get(`/api/products/${route.params.id}`);
     product.value = response.data;
+    const extraImages = (product.value.images || []).map((img) => img.image_url);
+    const baseImage = product.value.image_url ? [product.value.image_url] : [];
+    const uniqueImages = Array.from(new Set([...baseImage, ...extraImages]));
+    galleryImages.value = uniqueImages.length ? uniqueImages : baseImage;
+    activeIndex.value = 0;
     
     // Fetch similar products (simplified for now)
     const similarRes = await axios.get('/api/products', { 
@@ -246,6 +274,29 @@ const fetchProduct = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const setActiveImage = (index) => {
+  activeIndex.value = index;
+};
+
+const openGallery = () => {
+  if (!galleryImages.value.length) return;
+  showGallery.value = true;
+};
+
+const closeGallery = () => {
+  showGallery.value = false;
+};
+
+const prevImage = () => {
+  if (!galleryImages.value.length) return;
+  activeIndex.value = (activeIndex.value - 1 + galleryImages.value.length) % galleryImages.value.length;
+};
+
+const nextImage = () => {
+  if (!galleryImages.value.length) return;
+  activeIndex.value = (activeIndex.value + 1) % galleryImages.value.length;
 };
 
 const addToCart = async () => {
