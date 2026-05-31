@@ -16,7 +16,7 @@
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
         <div class="absolute top-0 right-0 p-8">
           <span :class="getStatusClass(order.status)" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest border">
-            {{ order.status }}
+            {{ formatStatus(order.status) }}
           </span>
         </div>
         
@@ -33,29 +33,53 @@
             </div>
             <div>
               <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest mb-1">Metode Pembayaran</p>
-              <p class="text-white">Simulasi Transfer Bank</p>
+              <p class="text-white">Transfer Bank Manual</p>
             </div>
+          </div>
+          
+          <div class="border-t border-zinc-800 pt-6">
+            <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest mb-2">Alamat Pengiriman</p>
+            <p class="text-white">{{ order.shipping_address }}</p>
+            <p class="text-white">{{ order.city }}, {{ order.province }} - {{ order.postal_code }}</p>
           </div>
         </div>
 
-        <!-- Payment Action -->
-        <div v-if="order.status === 'pending'" class="mt-10 p-6 bg-red-600/10 border border-red-600/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-              <CreditCard class="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p class="font-bold text-white text-lg">Menunggu Pembayaran</p>
-              <p class="text-zinc-400 text-sm">Silakan selesaikan pembayaran untuk memproses pesanan Anda.</p>
+        <div v-if="order.status === 'pending'" class="mt-10 p-6 bg-red-600/10 border border-red-600/20 rounded-2xl">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+                <CreditCard class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p class="font-bold text-white text-lg">Menunggu Pembayaran</p>
+                <p class="text-zinc-400 text-sm">Transfer ke <strong>BCA 1234567890 a.n Gaming Gear</strong> sebesar <strong>Rp {{ formatPrice(order.total_price) }}</strong></p>
+              </div>
             </div>
           </div>
-          <button 
-            @click="simulatePayment"
-            :disabled="paymentLoading"
-            class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
-          >
-            {{ paymentLoading ? 'Memproses...' : 'Simulasi Bayar Sekarang' }}
-          </button>
+          
+          <form @submit.prevent="uploadReceipt" class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-zinc-400 uppercase tracking-widest mb-2">Upload Bukti Transfer</label>
+              <input type="file" @change="handleFileChange" accept="image/*" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-red-600 file:text-white hover:file:bg-red-700" required />
+            </div>
+            <button 
+              type="submit"
+              :disabled="paymentLoading || !receiptFile"
+              class="w-full bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 uppercase tracking-widest"
+            >
+              {{ paymentLoading ? 'Mengunggah...' : 'Konfirmasi Pembayaran' }}
+            </button>
+          </form>
+        </div>
+
+        <div v-else-if="order.status === 'processing'" class="mt-10 p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center gap-4">
+          <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+            <Loader2 class="w-6 h-6 text-white animate-spin" />
+          </div>
+          <div>
+            <p class="font-bold text-white text-lg">Menunggu Verifikasi Admin</p>
+            <p class="text-zinc-400 text-sm">Bukti pembayaran Anda sedang dicek. Kami akan memproses pesanan Anda segera.</p>
+          </div>
         </div>
       </div>
 
@@ -74,9 +98,19 @@
             <p class="font-bold text-white">Rp {{ formatPrice(item.price * item.quantity) }}</p>
           </div>
         </div>
-        <div class="p-8 bg-zinc-800/30 flex justify-between items-center">
-          <span class="text-zinc-400 font-bold uppercase tracking-widest">Total Bayar</span>
-          <span class="text-3xl font-black text-red-600">Rp {{ formatPrice(order.total_price) }}</span>
+        <div class="p-6 bg-zinc-800/30 space-y-4">
+          <div class="flex justify-between items-center text-sm text-zinc-400">
+            <span>Subtotal Produk</span>
+            <span>Rp {{ formatPrice(order.total_price - order.shipping_cost) }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm text-zinc-400">
+            <span>Ongkos Kirim</span>
+            <span>Rp {{ formatPrice(order.shipping_cost) }}</span>
+          </div>
+          <div class="flex justify-between items-center pt-4 border-t border-zinc-700/50">
+            <span class="text-zinc-400 font-bold uppercase tracking-widest">Total Bayar</span>
+            <span class="text-3xl font-black text-red-600">Rp {{ formatPrice(order.total_price) }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -93,6 +127,7 @@ const route = useRoute();
 const order = ref(null);
 const loading = ref(true);
 const paymentLoading = ref(false);
+const receiptFile = ref(null);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
@@ -111,9 +146,17 @@ const formatDate = (dateString) => {
 const getStatusClass = (status) => {
   switch (status) {
     case 'completed': return 'text-green-500 border-green-500/20 bg-green-500/5';
-    case 'pending': return 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5';
+    case 'pending': return 'text-red-500 border-red-500/20 bg-red-500/5';
+    case 'processing': return 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5';
     default: return 'text-zinc-500 border-zinc-800 bg-zinc-800/5';
   }
+};
+
+const formatStatus = (status) => {
+  if (status === 'pending') return 'Belum Bayar';
+  if (status === 'processing') return 'Menunggu Verifikasi';
+  if (status === 'completed') return 'Selesai';
+  return status;
 };
 
 const fetchOrderDetails = async () => {
@@ -128,14 +171,28 @@ const fetchOrderDetails = async () => {
   }
 };
 
-const simulatePayment = async () => {
+const handleFileChange = (e) => {
+  receiptFile.value = e.target.files[0];
+};
+
+const uploadReceipt = async () => {
+  if (!receiptFile.value) return;
+  
   paymentLoading.value = true;
+  
+  const formData = new FormData();
+  formData.append('receipt', receiptFile.value);
+  
   try {
-    const res = await axios.post(`/api/orders/${order.value.id}/pay`);
+    const res = await axios.post(`/api/orders/${order.value.id}/pay`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     order.value = res.data.order;
-    alert('Pembayaran berhasil disimulasikan!');
+    alert(res.data.message);
   } catch (e) {
-    alert('Gagal melakukan pembayaran');
+    alert(e.response?.data?.message || 'Gagal mengunggah bukti pembayaran');
   } finally {
     paymentLoading.value = false;
   }

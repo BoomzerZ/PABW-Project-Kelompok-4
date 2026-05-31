@@ -29,20 +29,104 @@
                   {{ order.status }}
                 </span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-6 py-4 flex items-center gap-3">
                 <select 
                   @change="updateStatus(order.id, $event.target.value)" 
                   :value="order.status"
                   class="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-red-600 transition-colors"
                 >
                   <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
+                  <option value="processing">Processing (Awaiting Verification)</option>
                   <option value="completed">Completed</option>
                 </select>
+                <button 
+                  @click="openDetailModal(order)"
+                  class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors"
+                >
+                  Detail
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Modal Detail Pesanan -->
+    <div v-if="selectedOrder" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="sticky top-0 bg-zinc-900/95 p-6 border-b border-zinc-800 flex justify-between items-center z-10">
+          <h2 class="text-xl font-bold">Detail Pesanan #{{ selectedOrder.id }}</h2>
+          <button @click="closeDetailModal" class="p-2 hover:bg-zinc-800 rounded-xl transition-colors">
+            <X class="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div class="p-6 space-y-8">
+          <!-- User Info & Shipping -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-widest">Informasi Pembeli</h3>
+              <div class="bg-zinc-800/30 p-4 rounded-xl">
+                <p class="font-bold">{{ selectedOrder.user?.name }}</p>
+                <p class="text-zinc-400 text-sm">{{ selectedOrder.user?.email }}</p>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-widest">Alamat Pengiriman</h3>
+              <div class="bg-zinc-800/30 p-4 rounded-xl text-sm">
+                <p>{{ selectedOrder.shipping_address || '-' }}</p>
+                <p>{{ selectedOrder.city }}, {{ selectedOrder.province }}</p>
+                <p>Kode Pos: {{ selectedOrder.postal_code }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div class="space-y-4">
+            <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-widest">Daftar Produk</h3>
+            <div class="bg-zinc-800/30 rounded-xl divide-y divide-zinc-800">
+              <div v-for="item in selectedOrder.items" :key="item.id" class="p-4 flex items-center gap-4">
+                <img :src="item.product.image_url" class="w-12 h-12 object-cover rounded-lg" />
+                <div class="flex-1">
+                  <h4 class="font-bold text-sm">{{ item.product.name }}</h4>
+                  <p class="text-xs text-zinc-500">{{ item.quantity }} x Rp {{ formatPrice(item.price) }}</p>
+                </div>
+                <p class="font-bold text-sm">Rp {{ formatPrice(item.price * item.quantity) }}</p>
+              </div>
+              <div class="p-4 bg-zinc-800/50 flex flex-col gap-2">
+                <div class="flex justify-between text-sm text-zinc-400">
+                  <span>Subtotal</span>
+                  <span>Rp {{ formatPrice(selectedOrder.total_price - (selectedOrder.shipping_cost || 0)) }}</span>
+                </div>
+                <div class="flex justify-between text-sm text-zinc-400">
+                  <span>Ongkos Kirim</span>
+                  <span>Rp {{ formatPrice(selectedOrder.shipping_cost || 0) }}</span>
+                </div>
+                <div class="flex justify-between font-bold pt-2 border-t border-zinc-700">
+                  <span>Total Harga</span>
+                  <span class="text-red-500">Rp {{ formatPrice(selectedOrder.total_price) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Receipt -->
+          <div class="space-y-4">
+            <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-widest">Bukti Pembayaran</h3>
+            <div class="bg-zinc-800/30 p-4 rounded-xl">
+              <div v-if="selectedOrder.payment_receipt" class="space-y-4">
+                <a :href="selectedOrder.payment_receipt" target="_blank" class="block rounded-lg overflow-hidden border border-zinc-700 hover:border-red-500 transition-colors w-fit">
+                  <img :src="selectedOrder.payment_receipt" alt="Bukti Transfer" class="max-w-xs max-h-64 object-contain" />
+                </a>
+                <p class="text-xs text-zinc-500">Klik gambar untuk memperbesar</p>
+              </div>
+              <p v-else class="text-sm text-zinc-500 italic">Belum ada bukti pembayaran yang diunggah.</p>
+            </div>
+          </div>
+          
+        </div>
       </div>
     </div>
   </div>
@@ -51,8 +135,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { X } from 'lucide-vue-next';
 
 const orders = ref([]);
+const selectedOrder = ref(null);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('id-ID').format(price);
@@ -80,10 +166,23 @@ const updateStatus = async (id, status) => {
   try {
     await axios.put(`/api/admin/orders/${id}/status`, { status });
     fetchOrders();
-    alert('Status pesanan diperbarui');
+    // Update selected order if modal is open
+    if (selectedOrder.value && selectedOrder.value.id === id) {
+      selectedOrder.value.status = status;
+    }
   } catch (e) {
     alert('Gagal memperbarui status');
   }
+};
+
+const openDetailModal = (order) => {
+  selectedOrder.value = order;
+  document.body.style.overflow = 'hidden'; // Prevent scrolling
+};
+
+const closeDetailModal = () => {
+  selectedOrder.value = null;
+  document.body.style.overflow = 'auto';
 };
 
 onMounted(fetchOrders);

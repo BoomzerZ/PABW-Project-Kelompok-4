@@ -2,44 +2,76 @@
   <div class="max-w-7xl mx-auto space-y-12 pb-20">
     <!-- Search Bar & Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <h1 class="text-3xl font-bold flex items-center gap-2">
-        <Gamepad2 class="text-red-600 w-8 h-8" />
-        Gaming Gear Shop
-      </h1>
+      <div class="h-10 md:h-14">
+        <img :src="'/img/logo.png'" alt="AXELOT Logo" class="h-full w-auto object-contain drop-shadow-xl" />
+      </div>
       <div class="relative w-full md:max-w-md">
-        <input 
-          v-model="searchQuery"
-          @input="handleSearch"
-          type="text" 
-          placeholder="Cari keyboard, mouse, headset..." 
-          class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-red-600 transition-colors shadow-lg"
-        />
-        <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
+        <form @submit.prevent="$router.push({ path: '/products', query: { search: searchQuery } })">
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Cari keyboard, mouse, headset..." 
+            class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-red-600 transition-colors shadow-lg"
+          />
+          <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
+        </form>
       </div>
     </div>
 
-    <!-- Hero Banner -->
-    <div class="relative rounded-3xl overflow-hidden aspect-[16/10] md:aspect-[3/1] group shadow-2xl">
-      <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2000" alt="Hero Banner" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-      <div class="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent flex flex-col justify-center px-6 md:px-12 space-y-4 md:space-y-6">
-        <span class="inline-block bg-red-600 text-white px-3 py-1 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase self-start">Promo Ramadhan</span>
-        <h2 class="text-3xl md:text-6xl font-black text-white leading-tight uppercase">
-          LEVEL UP YOUR<br/><span class="text-red-600 italic">GAMING SETUP</span>
+    <!-- Hero Banner Carousel -->
+    <div @click="openPromoModal" class="cursor-pointer relative rounded-3xl overflow-hidden aspect-[16/10] md:aspect-[3/1] group shadow-2xl">
+      <!-- Slides -->
+      <div 
+        v-for="(img, index) in bannerImages" 
+        :key="index"
+        class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+        :class="index === currentBanner ? 'opacity-100 z-0' : 'opacity-0 -z-10'"
+      >
+        <img :src="img" alt="Promo Banner" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+      </div>
+
+      <!-- Content Overlay -->
+      <div class="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent flex flex-col justify-center px-6 md:px-12 space-y-4 md:space-y-6 z-10 pointer-events-none">
+        <span class="inline-block bg-red-600 text-white px-3 py-1 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase self-start">Promo Spesial</span>
+        <h2 class="text-3xl md:text-6xl font-black text-white leading-tight uppercase drop-shadow-lg">
+          WELCOME TO<br/><span class="text-red-600 italic">AXELOT</span>
         </h2>
-        <p class="text-zinc-300 text-sm md:text-lg max-w-lg line-clamp-2 md:line-clamp-none">
-          Dapatkan diskon hingga 50% untuk produk pilihan Logitech, Razer, dan SteelSeries.
+        <p class="text-zinc-300 text-sm md:text-lg max-w-lg line-clamp-2 md:line-clamp-none drop-shadow-md">
+          Dapatkan diskon eksklusif dan penawaran terbaik untuk produk pilihan dari AXELOT.
         </p>
-        <div>
-          <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all transform hover:translate-y-[-2px] shadow-lg shadow-red-600/20">
+        <div class="pointer-events-auto">
+          <router-link to="/products" @click.stop class="btn-cyber mt-4 w-fit">
             Belanja Sekarang
-          </button>
+          </router-link>
         </div>
       </div>
+
+      <!-- Carousel Indicators -->
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20 pointer-events-auto">
+        <button 
+          v-for="(_, index) in bannerImages" 
+          :key="index"
+          @click.stop="setBanner(index)"
+          class="h-2.5 rounded-full transition-all duration-300"
+          :class="index === currentBanner ? 'bg-red-600 w-8' : 'bg-white/50 w-2.5 hover:bg-white'"
+        ></button>
+      </div>
     </div>
 
-    <!-- Product Showcase -->
-    <div v-if="loading" class="flex justify-center py-20">
-      <Loader2 class="w-10 h-10 animate-spin text-red-600" />
+    <!-- Skeleton Loading -->
+    <div v-if="loading" class="space-y-12">
+      <section class="space-y-6">
+        <div class="h-8 bg-zinc-800 rounded w-1/4 animate-pulse"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <SkeletonCard v-for="i in 4" :key="i" type="product-card" />
+        </div>
+      </section>
+      <section class="space-y-6">
+        <div class="h-8 bg-zinc-800 rounded w-1/3 animate-pulse"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <SkeletonCard v-for="i in 3" :key="i" type="product-horizontal" />
+        </div>
+      </section>
     </div>
 
     <div v-else class="space-y-12">
@@ -57,14 +89,14 @@
           <div 
             v-for="product in products" 
             :key="product.id"
-            class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-red-600/50 transition-all group shadow-xl hover:shadow-red-600/5"
+            class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-red-600/80 transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(220,38,38,0.1)] hover:-translate-y-1 relative"
           >
             <div class="relative aspect-square overflow-hidden">
               <div v-if="isNewProduct(product.created_at)" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter z-10 animate-pulse">
                 New Arrival
               </div>
               <img :src="product.image_url" :alt="product.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+              <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
                 <button 
                   @click="addToCart(product)" 
                   :disabled="product.stock <= 0"
@@ -81,8 +113,8 @@
               </router-link>
               <p class="text-zinc-500 text-sm line-clamp-2">{{ product.description }}</p>
               <div class="pt-4 flex items-center justify-between">
-                <span class="text-xl font-black text-white">Rp {{ formatPrice(product.price) }}</span>
-                <span v-if="product.stock > 0" class="text-xs text-green-500 font-medium">Stok Ready</span>
+                <span class="text-xl font-black text-white drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">Rp {{ formatPrice(product.price) }}</span>
+                <span v-if="product.stock > 0" class="text-xs text-green-500 font-bold drop-shadow-[0_0_5px_rgba(34,197,94,0.4)]">Stok Ready</span>
                 <span v-else class="text-xs text-red-500 font-medium">Habis</span>
               </div>
             </div>
@@ -97,10 +129,10 @@
            <div 
             v-for="product in keyboards.slice(0, 3)" 
             :key="product.id"
-            class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex gap-6 hover:border-red-600/50 transition-all group shadow-lg"
+            class="bg-zinc-900/80 backdrop-blur-sm border-2 border-red-900/20 rounded-2xl p-6 flex gap-6 hover:border-red-600 transition-all duration-300 group shadow-lg hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] relative"
           >
-            <div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-zinc-800">
-              <img :src="product.image_url" :alt="product.name" class="w-full h-full object-cover" />
+            <div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-zinc-950 p-2 border border-zinc-800">
+              <img :src="product.image_url" :alt="product.name" class="w-full h-full object-contain" />
             </div>
             <div class="flex-1 flex flex-col justify-between py-1">
               <div>
@@ -144,11 +176,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Full Promo Modal -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="isPromoModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" @click="isPromoModalOpen = false">
+        <button class="absolute top-6 right-6 p-3 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-red-600 transition-colors shadow-2xl z-50">
+          <X class="w-6 h-6" />
+        </button>
+        <img :src="bannerImages[currentBanner]" alt="Promo Full" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-transform transform scale-100" @click.stop />
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { 
   Search, 
   Gamepad2, 
@@ -158,16 +207,46 @@ import {
   ChevronRight,
   MessageSquare,
   Plus,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-vue-next';
 import axios from 'axios';
 import { authState } from '../utils/auth';
 import { useRouter } from 'vue-router';
+import SkeletonCard from '../components/SkeletonCard.vue';
 
 const router = useRouter();
 const searchQuery = ref('');
 const products = ref([]);
 const loading = ref(true);
+
+// Carousel State
+const bannerImages = [
+  '/img/iklan1.png',
+  '/img/iklan2.png',
+  '/img/iklan3.png'
+];
+const currentBanner = ref(0);
+let bannerInterval;
+const isPromoModalOpen = ref(false);
+
+const openPromoModal = () => {
+  isPromoModalOpen.value = true;
+};
+
+const nextBanner = () => {
+  currentBanner.value = (currentBanner.value + 1) % bannerImages.length;
+};
+
+const setBanner = (index) => {
+  currentBanner.value = index;
+  resetInterval();
+};
+
+const resetInterval = () => {
+  clearInterval(bannerInterval);
+  bannerInterval = setInterval(nextBanner, 4000); // ganti tiap 4 detik
+};
 
 const keyboards = computed(() => {
   return products.value.filter(p => p.category?.name.toLowerCase().includes('keyboard'));
@@ -229,5 +308,10 @@ const addToCart = async (product) => {
 
 onMounted(() => {
   fetchProducts();
+  resetInterval();
+});
+
+onUnmounted(() => {
+  if (bannerInterval) clearInterval(bannerInterval);
 });
 </script>

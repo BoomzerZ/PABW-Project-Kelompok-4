@@ -17,6 +17,13 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'shipping_address' => 'required|string',
+            'city' => 'required|string',
+            'province' => 'required|string',
+            'postal_code' => 'required|string',
+        ]);
+
         $user = $request->user();
         return DB::transaction(function () use ($user, $request) {
             // Lock the cart items and their products
@@ -51,12 +58,18 @@ class OrderController extends Controller
                 }
             }
 
-            $totalPrice = $subtotal - $discount;
+            $shippingCost = 20000; // Flat rate
+            $totalPrice = $subtotal - $discount + $shippingCost;
 
             $order = Order::create([
                 'user_id' => $user->id,
                 'total_price' => $totalPrice,
                 'status' => 'pending',
+                'shipping_address' => $request->shipping_address,
+                'city' => $request->city,
+                'province' => $request->province,
+                'postal_code' => $request->postal_code,
+                'shipping_cost' => $shippingCost,
             ]);
 
             foreach ($cartItems as $cartItem) {

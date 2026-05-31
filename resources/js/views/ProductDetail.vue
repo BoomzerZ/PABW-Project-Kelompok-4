@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-7xl mx-auto pb-20">
-    <div v-if="loading" class="flex justify-center py-20">
-      <Loader2 class="w-10 h-10 animate-spin text-red-600" />
+    <div v-if="loading">
+      <SkeletonCard type="product-detail" />
     </div>
 
     <div v-else-if="product" class="space-y-12">
@@ -9,8 +9,11 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Gallery -->
         <div class="space-y-4">
-          <div class="aspect-square bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group cursor-zoom-in" @click="openGallery">
-            <img :src="activeImage" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+          <div class="relative group cursor-zoom-in" @click="openGallery">
+            <div class="absolute inset-0 bg-red-600/10 blur-[60px] rounded-full group-hover:bg-red-600/15 transition-colors duration-500"></div>
+            <div class="relative aspect-square bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
+              <img :src="activeImage" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 relative z-10" />
+            </div>
           </div>
           <div class="grid grid-cols-4 gap-4">
             <button
@@ -49,31 +52,33 @@
             </p>
 
             <!-- Specs Table -->
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-              <h3 class="font-bold text-white uppercase tracking-wider text-sm border-b border-zinc-800 pb-3">Spesifikasi Teknis</h3>
-              <div class="grid grid-cols-2 gap-y-3 text-sm">
+            <div class="bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 space-y-4 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]">
+              <h3 class="font-bold text-red-500 uppercase tracking-widest text-sm flex items-center gap-2 border-b border-zinc-800/50 pb-3">
+                <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(239,68,68,0.8)]"></div> Spesifikasi Teknis
+              </h3>
+              <div class="grid grid-cols-2 gap-y-4 text-sm pt-2">
                 <template v-if="product.switch_type">
-                  <span class="text-zinc-500">Switch Type</span>
-                  <span class="text-white font-medium">{{ product.switch_type }}</span>
+                  <span class="text-zinc-500 font-medium">Switch Type</span>
+                  <span class="text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">{{ product.switch_type }}</span>
                 </template>
                 <template v-if="product.dpi">
-                  <span class="text-zinc-500">Max DPI</span>
-                  <span class="text-white font-medium">{{ product.dpi }} DPI</span>
+                  <span class="text-zinc-500 font-medium">Max DPI</span>
+                  <span class="text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">{{ product.dpi }} DPI</span>
                 </template>
                 <template v-if="product.sensor">
-                  <span class="text-zinc-500">Sensor</span>
-                  <span class="text-white font-medium">{{ product.sensor }}</span>
+                  <span class="text-zinc-500 font-medium">Sensor</span>
+                  <span class="text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">{{ product.sensor }}</span>
                 </template>
                 <template v-if="product.connectivity">
-                  <span class="text-zinc-500">Konektivitas</span>
-                  <span class="text-white font-medium">{{ product.connectivity }}</span>
+                  <span class="text-zinc-500 font-medium">Konektivitas</span>
+                  <span class="text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">{{ product.connectivity }}</span>
                 </template>
                 <template v-if="product.weight">
-                  <span class="text-zinc-500">Berat</span>
-                  <span class="text-white font-medium">{{ product.weight }}</span>
+                  <span class="text-zinc-500 font-medium">Berat</span>
+                  <span class="text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">{{ product.weight }}</span>
                 </template>
-                <span class="text-zinc-500">Garansi</span>
-                <span class="text-white font-medium">1 Tahun Resmi</span>
+                <span class="text-zinc-500 font-medium">Garansi</span>
+                <span class="text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">1 Tahun Resmi</span>
               </div>
             </div>
           </div>
@@ -99,13 +104,16 @@
               <button 
                 @click="addToCart" 
                 :disabled="product.stock <= 0 || cartLoading"
-                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-widest"
+                class="flex-1 btn-cyber disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:shadow-[6px_0_0_#7f1d1d] flex items-center justify-center gap-3 w-full"
               >
-                <ShoppingCart class="w-5 h-5" />
-                {{ cartLoading ? 'Menambahkan...' : 'Tambah ke Keranjang' }}
+                <ShoppingCart class="w-5 h-5 relative z-10" />
+                <span class="relative z-10">{{ cartLoading ? 'Menambahkan...' : 'Tambah ke Keranjang' }}</span>
               </button>
-              <button class="p-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-zinc-400 hover:text-white transition-colors">
-                <Heart class="w-6 h-6" />
+              <button 
+                @click="toggleWishlist"
+                :class="['p-4 rounded-xl transition-colors', isWishlisted ? 'bg-red-600/20 text-red-500 hover:bg-red-600/30' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white']"
+              >
+                <Heart :class="['w-6 h-6', isWishlisted ? 'fill-current' : '']" />
               </button>
             </div>
           </div>
@@ -116,25 +124,33 @@
       <section class="space-y-8">
         <h2 class="text-2xl font-black border-l-4 border-red-600 pl-4 uppercase tracking-wider">Ulasan Pembeli</h2>
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 space-y-8">
-           <div v-for="i in 2" :key="i" class="border-b border-zinc-800 last:border-0 pb-8 last:pb-0 space-y-4">
+           <div v-if="!product.reviews || product.reviews.length === 0" class="text-center py-6 text-zinc-500">
+             Belum ada ulasan untuk produk ini. Jadilah yang pertama!
+           </div>
+           <div v-else v-for="review in product.reviews" :key="review.id" class="border-b border-zinc-800 last:border-0 pb-8 last:pb-0 space-y-4">
              <div class="flex justify-between items-start">
                <div class="flex items-center gap-3">
-                 <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center font-bold text-white uppercase text-xs">U{{ i }}</div>
+                 <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center font-bold text-white uppercase text-xs">
+                   {{ review.user?.name ? review.user.name.substring(0, 2) : 'U' }}
+                 </div>
                  <div>
-                   <p class="font-bold text-white">User Gamer #{{ i }}</p>
+                   <p class="font-bold text-white">{{ review.user?.name || 'User' }}</p>
                    <div class="flex text-yellow-500 scale-75 -ml-4">
-                     <Star v-for="j in 5" :key="j" class="w-4 h-4 fill-current" />
+                     <Star v-for="j in 5" :key="j" :class="['w-4 h-4', j <= review.rating ? 'fill-current' : 'text-zinc-700']" />
                    </div>
                  </div>
                </div>
-               <span class="text-xs text-zinc-500">2 hari yang lalu</span>
+               <span class="text-xs text-zinc-500">{{ new Date(review.created_at).toLocaleDateString('id-ID') }}</span>
              </div>
-             <p class="text-zinc-400 italic">"Produk sangat berkualitas, pengiriman cepat dan packing aman. Recommended seller!"</p>
+             <p class="text-zinc-400 italic">"{{ review.comment }}"</p>
            </div>
            
-           <button @click="showReviewModal = true" class="w-full py-4 border-2 border-dashed border-zinc-800 rounded-2xl text-zinc-500 font-bold hover:border-zinc-700 hover:text-zinc-400 transition-all uppercase tracking-widest text-sm">
+           <button v-if="authState.isAuthenticated" @click="showReviewModal = true" class="w-full py-4 border-2 border-dashed border-zinc-800 rounded-2xl text-zinc-500 font-bold hover:border-zinc-700 hover:text-zinc-400 transition-all uppercase tracking-widest text-sm">
              Tulis Ulasan Kamu
            </button>
+           <div v-else class="text-center">
+             <p class="text-zinc-500 text-sm mt-4">Silakan <router-link to="/login" class="text-red-500 hover:underline">login</router-link> untuk menulis ulasan.</p>
+           </div>
         </div>
       </section>
 
@@ -228,6 +244,7 @@ import {
 } from 'lucide-vue-next';
 import axios from 'axios';
 import { authState } from '../utils/auth';
+import SkeletonCard from '../components/SkeletonCard.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -238,6 +255,7 @@ const cartLoading = ref(false);
 const quantity = ref(1);
 const showReviewModal = ref(false);
 const showGallery = ref(false);
+const isWishlisted = ref(false);
 const reviewForm = ref({
   rating: 5,
   comment: ''
@@ -269,6 +287,10 @@ const fetchProduct = async () => {
     similarProducts.value = (similarRes.data.data || similarRes.data)
       .filter(p => p.id !== product.value.id)
       .slice(0, 4);
+
+    if (authState.isAuthenticated) {
+      checkWishlistStatus();
+    }
   } catch (error) {
     console.error('Failed to fetch product', error);
   } finally {
@@ -319,10 +341,45 @@ const addToCart = async () => {
   }
 };
 
-const submitReview = () => {
-  alert('Ulasan kamu berhasil dikirim! Terima kasih atas feedback-nya.');
-  showReviewModal.value = false;
-  reviewForm.value = { rating: 5, comment: '' };
+const checkWishlistStatus = async () => {
+  try {
+    const response = await axios.get('/api/wishlist');
+    const wishlists = response.data;
+    isWishlisted.value = wishlists.some(w => w.product_id === product.value.id);
+  } catch (error) {
+    console.error('Failed to check wishlist status', error);
+  }
+};
+
+const toggleWishlist = async () => {
+  if (!authState.isAuthenticated) {
+    router.push('/login');
+    return;
+  }
+  
+  try {
+    const response = await axios.post('/api/wishlist/toggle', { product_id: product.value.id });
+    isWishlisted.value = response.data.is_wishlisted;
+  } catch (error) {
+    console.error('Failed to toggle wishlist', error);
+  }
+};
+
+const submitReview = async () => {
+  if (!reviewForm.value.comment.trim()) {
+    alert('Komentar tidak boleh kosong!');
+    return;
+  }
+  
+  try {
+    const response = await axios.post(`/api/products/${product.value.id}/reviews`, reviewForm.value);
+    alert(response.data.message || 'Ulasan kamu berhasil dikirim!');
+    showReviewModal.value = false;
+    reviewForm.value = { rating: 5, comment: '' };
+    fetchProduct(); // refresh product to show new review
+  } catch (error) {
+    alert(error.response?.data?.message || 'Gagal mengirim ulasan');
+  }
 };
 
 onMounted(fetchProduct);

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -7,6 +8,55 @@
 @source '../**/*.vue';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Orbitron', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer utilities {
+    .bg-cyber {
+        background-color: #09090b;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(220, 38, 38, 0.05) 0, transparent 30%),
+            radial-gradient(circle at 100% 100%, rgba(220, 38, 38, 0.03) 0, transparent 30%),
+            linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+        background-attachment: fixed;
+    }
+
+    .btn-cyber {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        font-weight: 900;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        transition: all 0.3s;
+        background: linear-gradient(45deg, transparent 5%, #dc2626 5%);
+        box-shadow: 6px 0px 0px #7f1d1d;
+    }
+    .btn-cyber:hover {
+        background: linear-gradient(45deg, transparent 5%, #b91c1c 5%);
+        box-shadow: 2px 0px 0px #7f1d1d;
+        transform: translateX(4px);
+    }
+    .btn-cyber::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background-color: white;
+    }
+
+
+    @keyframes shimmer {
+        100% {
+            transform: translateX(100%);
+        }
+    }
 }

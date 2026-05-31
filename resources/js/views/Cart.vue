@@ -65,6 +65,55 @@
           <p v-if="couponError" class="text-red-500 text-xs mt-2 font-medium">{{ couponError }}</p>
         </div>
 
+        <!-- Shipping Form -->
+        <div class="border-t border-zinc-800 pt-6 space-y-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-white uppercase tracking-widest text-sm">Alamat Pengiriman</h3>
+            <button 
+              v-if="hasSavedAddress"
+              @click="useSavedAddress" 
+              class="text-xs bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white px-3 py-1.5 rounded-lg font-bold transition-colors border border-red-600/20"
+            >
+              Gunakan Alamat Tersimpan
+            </button>
+          </div>
+          <div class="space-y-3">
+            <textarea 
+              v-model="shippingForm.address"
+              placeholder="Alamat Lengkap (Jl, RT/RW, No Rumah)" 
+              class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600"
+              rows="2"
+            ></textarea>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="space-y-2">
+                <CustomSelect 
+                  v-model="selectedProvinceId"
+                  :options="provinces"
+                  placeholder="Pilih Provinsi..."
+                  @change="handleProvinceChange"
+                  bgClass="bg-zinc-900 border-zinc-800"
+                />
+              </div>
+              <div class="space-y-2">
+                <CustomSelect 
+                  v-model="selectedCityId"
+                  :options="cities"
+                  :placeholder="citiesLoading ? 'Memuat...' : 'Pilih Kota...'"
+                  :disabled="!selectedProvinceId || citiesLoading"
+                  @change="handleCityChange"
+                  bgClass="bg-zinc-900 border-zinc-800"
+                />
+              </div>
+            </div>
+            <input 
+              v-model="shippingForm.postal_code"
+              type="text" 
+              placeholder="Kode Pos" 
+              class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600"
+            />
+          </div>
+        </div>
+
         <div class="border-t border-zinc-800 pt-6 space-y-4">
           <div class="flex justify-between items-center text-zinc-400 text-sm">
             <span>Subtotal</span>
@@ -73,6 +122,10 @@
           <div v-if="appliedCoupon" class="flex justify-between items-center text-green-500 text-sm">
             <span>Diskon</span>
             <span>- Rp {{ formatPrice(discount) }}</span>
+          </div>
+          <div class="flex justify-between items-center text-zinc-400 text-sm">
+            <span>Ongkos Kirim (Flat Rate)</span>
+            <span>Rp {{ formatPrice(shippingCost) }}</span>
           </div>
           <div class="flex justify-between items-center pt-2 border-t border-zinc-800/50">
             <span class="text-base md:text-xl font-bold text-white uppercase tracking-tighter">Total</span>
@@ -102,6 +155,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { authState } from '../utils/auth';
+import CustomSelect from '../components/CustomSelect.vue';
 import { ShoppingCart, Trash2, Loader2, Ticket, X } from 'lucide-vue-next';
 import axios from 'axios';
 
@@ -112,6 +167,85 @@ const couponCode = ref('');
 const couponLoading = ref(false);
 const appliedCoupon = ref(null);
 const couponError = ref('');
+const shippingCost = ref(20000);
+
+const shippingForm = ref({
+  address: '',
+  city: '',
+  province: '',
+  postal_code: ''
+});
+
+const provinces = ref([]);
+const cities = ref([]);
+const selectedProvinceId = ref('');
+const selectedCityId = ref('');
+const citiesLoading = ref(false);
+
+const fetchProvinces = async () => {
+  try {
+    const res = await fetch('/data/provinces.json');
+    provinces.value = await res.json();
+  } catch (e) {
+    console.error('Gagal memuat provinsi', e);
+  }
+};
+
+const fetchCities = async (provinceId) => {
+  if (!provinceId) {
+    cities.value = [];
+    return;
+  }
+  citiesLoading.value = true;
+  try {
+    const res = await fetch(`/data/regencies/${provinceId}.json`);
+    cities.value = await res.json();
+  } catch (e) {
+    console.error('Gagal memuat kota', e);
+  } finally {
+    citiesLoading.value = false;
+  }
+};
+
+const handleProvinceChange = async () => {
+  const province = provinces.value.find(p => p.id === selectedProvinceId.value);
+  shippingForm.value.province = province ? province.name : '';
+  selectedCityId.value = '';
+  shippingForm.value.city = '';
+  await fetchCities(selectedProvinceId.value);
+};
+
+const handleCityChange = () => {
+  const city = cities.value.find(c => c.id === selectedCityId.value);
+  shippingForm.value.city = city ? city.name : '';
+};
+
+const hasSavedAddress = computed(() => {
+  return authState.user && authState.user.address && authState.user.city;
+});
+
+const useSavedAddress = async () => {
+  if (authState.user) {
+    shippingForm.value.address = authState.user.address || '';
+    shippingForm.value.city = authState.user.city || '';
+    shippingForm.value.province = authState.user.province || '';
+    shippingForm.value.postal_code = authState.user.postal_code || '';
+    
+    if (shippingForm.value.province) {
+      const foundProv = provinces.value.find(p => p.name === shippingForm.value.province);
+      if (foundProv) {
+        selectedProvinceId.value = foundProv.id;
+        await fetchCities(foundProv.id);
+        if (shippingForm.value.city) {
+          const foundCity = cities.value.find(c => c.name === shippingForm.value.city);
+          if (foundCity) {
+            selectedCityId.value = foundCity.id;
+          }
+        }
+      }
+    }
+  }
+};
 
 const subtotal = computed(() => {
   return cartItems.value.reduce((total, item) => total + (item.product.price * item.quantity), 0);
@@ -123,7 +257,7 @@ const discount = computed(() => {
 });
 
 const totalPrice = computed(() => {
-  return subtotal.value - discount.value;
+  return subtotal.value - discount.value + shippingCost.value;
 });
 
 const isStockValid = computed(() => {
@@ -172,14 +306,19 @@ const removeCoupon = () => {
 };
 
 const removeItem = async (id) => {
+  // Optimistic: simpan backup lalu hapus dari UI seketika
+  const backup = [...cartItems.value];
+  cartItems.value = cartItems.value.filter(item => item.id !== id);
+
   try {
     await axios.delete(`/api/cart/${id}`);
-    cartItems.value = cartItems.value.filter(item => item.id !== id);
     // Refresh coupon if subtotal changes
     if (appliedCoupon.value) {
       handleApplyCoupon();
     }
   } catch (error) {
+    // Rollback: kembalikan UI ke kondisi semula
+    cartItems.value = backup;
     alert('Gagal menghapus item');
   }
 };
@@ -187,10 +326,19 @@ const removeItem = async (id) => {
 const handleCheckout = async () => {
   if (cartItems.value.length === 0 || !isStockValid.value) return;
   
+  if (!shippingForm.value.address || !shippingForm.value.city || !shippingForm.value.province || !shippingForm.value.postal_code) {
+    alert('Mohon lengkapi semua form alamat pengiriman!');
+    return;
+  }
+  
   checkoutLoading.value = true;
   try {
     const response = await axios.post('/api/orders', {
-      coupon_code: appliedCoupon.value?.code
+      coupon_code: appliedCoupon.value?.code,
+      shipping_address: shippingForm.value.address,
+      city: shippingForm.value.city,
+      province: shippingForm.value.province,
+      postal_code: shippingForm.value.postal_code
     });
     alert('Checkout berhasil! ID Pesanan: ' + response.data.id);
     cartItems.value = [];
@@ -202,7 +350,8 @@ const handleCheckout = async () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchProvinces();
   fetchCart();
 });
 </script>

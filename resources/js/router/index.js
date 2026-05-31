@@ -6,6 +6,7 @@ import Orders from '../views/Orders.vue';
 import OrderDetails from '../views/OrderDetails.vue';
 import Wishlist from '../views/Wishlist.vue';
 import Notifications from '../views/Notifications.vue';
+import Products from '../views/Products.vue';
 import ProductDetail from '../views/ProductDetail.vue';
 import Settings from '../views/Settings.vue';
 import Login from '../views/Login.vue';
@@ -26,6 +27,7 @@ const routes = [
   { path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true } },
   { path: '/wishlist', name: 'Wishlist', component: Wishlist, meta: { requiresAuth: true } },
   { path: '/notifications', name: 'Notifications', component: Notifications, meta: { requiresAuth: true } },
+  { path: '/products', name: 'Products', component: Products },
   { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
   { path: '/orders', name: 'Orders', component: Orders, meta: { requiresAuth: true } },
   { path: '/orders/:id', name: 'OrderDetails', component: OrderDetails, meta: { requiresAuth: true } },
@@ -38,7 +40,7 @@ const routes = [
   {
     path: '/admin',
     component: AdminLayout,
-    meta: { requiresAuth: true, requiresAdmin: true },
+    meta: { requiresAuth: true, requiresAdmin: true, hideSidebar: true },
     children: [
       { path: '', name: 'AdminDashboard', component: AdminDashboard },
       { path: 'products', name: 'AdminProducts', component: AdminProducts },

@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gaming Gear Marketplace</title>
+    <title>AXELOT</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-black text-white">
+<body class="bg-black text-white bg-cyber relative min-h-screen">
     <div id="app"></div>
 </body>
 </html>

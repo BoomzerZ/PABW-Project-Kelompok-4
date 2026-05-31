@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -68,7 +69,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'reviews.user', 'images'])->find($id);
+        $product = Cache::remember("product_{$id}", 3600, function () use ($id) {
+            return Product::with(['category', 'reviews.user', 'images'])->find($id);
+        });
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
@@ -84,7 +87,9 @@ class ProductController extends Controller
      */
     public function aiContext()
     {
-        $products = Product::with(['category', 'images'])->get();
+        $products = Cache::remember('products_ai_context', 3600, function () {
+            return Product::with(['category', 'images'])->get();
+        });
         return response()->json($products);
     }
 }

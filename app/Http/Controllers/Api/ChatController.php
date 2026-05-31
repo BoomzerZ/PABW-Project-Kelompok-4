@@ -91,13 +91,26 @@ class ChatController extends Controller
 
         // 5. Call Ollama API
         try {
-            $ollamaUrl = env('OLLAMA_URL', 'http://localhost:11434');
-            $ollamaModel = env('OLLAMA_MODEL', 'qwen2.5:7b');
-            $ollamaTimeout = env('OLLAMA_TIMEOUT', 120);
+            $ollamaUrl = config('services.ollama.url', 'http://localhost:11434');
+            $ollamaModel = config('services.ollama.model', 'qwen2.5:7b');
+            $ollamaTimeout = config('services.ollama.timeout', 120);
             
-            $response = Http::timeout((int)$ollamaTimeout)->post("{$ollamaUrl}/api/generate", [
+            $response = Http::timeout((int)$ollamaTimeout)->post("{$ollamaUrl}/api/chat", [
                 'model' => $ollamaModel,
-                'prompt' => "Context: {$context}\n\nUser: {$userMessage}\nAI:",
+                'messages' => [
+                    [
+                        "role" => "system",
+                        "content" => "Anda adalah asisten AI yang ramah dan membantu untuk AXELOT, sebuah toko perlengkapan gaming premium.
+Gunakan bahasa Indonesia yang santai, modern, dan sopan (gunakan kata 'saya' dan 'kamu').
+Fokus berikan rekomendasi seputar gear gaming seperti keyboard mechanical, mouse, headset, dll.
+Selalu ingat bahwa nama toko ini adalah AXELOT.
+Jawab secara singkat namun jelas dan informatif. Maksimal 3 paragraf."
+                    ],
+                    [
+                        "role" => "user",
+                        "content" => "Context: {$context}\n\nUser: {$userMessage}"
+                    ]
+                ],
                 'stream' => false,
             ]);
 
@@ -108,7 +121,7 @@ class ChatController extends Controller
                 ], 503);
             }
 
-            $aiResponse = $response->json('response');
+            $aiResponse = $response->json('message.content');
 
             // 6. Save History
             ChatHistory::create([
@@ -140,7 +153,7 @@ class ChatController extends Controller
     public function healthCheck()
     {
         try {
-            $ollamaUrl = env('OLLAMA_URL', 'http://localhost:11434');
+            $ollamaUrl = config('services.ollama.url', 'http://localhost:11434');
             $response = Http::timeout(5)->get("{$ollamaUrl}/api/tags");
             
             if ($response->successful()) {

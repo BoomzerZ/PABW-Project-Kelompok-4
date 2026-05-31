@@ -1,10 +1,7 @@
 <template>
-  <aside class="fixed inset-y-0 left-0 w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
-    <div class="p-6">
-      <h1 class="text-2xl font-bold text-red-600 flex items-center gap-2">
-        <Gamepad2 class="w-8 h-8" />
-        GAMING GEAR
-      </h1>
+  <aside class="fixed inset-y-0 left-0 w-64 bg-zinc-950/90 backdrop-blur-xl border-r border-red-900/30 flex flex-col shadow-[10px_0_30px_rgba(220,38,38,0.05)] z-40">
+    <div class="h-20 flex items-center justify-center border-b border-red-900/30 p-3 bg-red-950/10">
+      <img :src="'/img/logo.png'" alt="AXELOT Logo" class="w-full h-full object-contain drop-shadow-xl" />
     </div>
 
     <nav class="flex-1 px-4 space-y-2 mt-4">
@@ -12,11 +9,11 @@
         v-for="item in filteredMenuItems" 
         :key="item.path" 
         :to="item.path"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group"
+        class="flex items-center gap-3 px-4 py-3 rounded-r-xl transition-all duration-300 group"
         :class="[
           $route.path === item.path 
-            ? 'bg-red-600 text-white' 
-            : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+            ? 'bg-gradient-to-r from-red-600/20 to-transparent text-white border-l-4 border-red-600 shadow-[inset_4px_0_10px_rgba(220,38,38,0.1)]' 
+            : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border-l-4 border-transparent hover:border-zinc-700 hover:translate-x-1'
         ]"
       >
         <component :is="item.icon" class="w-5 h-5" />

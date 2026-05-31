@@ -12,7 +12,13 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'total_price',
-        'status'
+        'status',
+        'shipping_address',
+        'city',
+        'province',
+        'postal_code',
+        'shipping_cost',
+        'payment_receipt',
     ];
 
     /**

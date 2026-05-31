@@ -47,6 +47,54 @@
                 class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
+            
+            <div class="space-y-2 md:col-span-2 mt-4 pt-4 border-t border-zinc-800">
+              <h3 class="font-bold text-white mb-2 text-lg">Alamat Utama</h3>
+              
+              <div class="space-y-4">
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Alamat Lengkap</label>
+                  <textarea 
+                    v-model="editForm.address"
+                    placeholder="Jl, RT/RW, No Rumah"
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition-colors"
+                    rows="2"
+                  ></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div class="space-y-2">
+                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Provinsi</label>
+                    <CustomSelect 
+                      v-model="selectedProvinceId"
+                      :options="provinces"
+                      placeholder="Pilih Provinsi..."
+                      @change="handleProvinceChange"
+                      bgClass="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Kota/Kabupaten</label>
+                    <CustomSelect 
+                      v-model="selectedCityId"
+                      :options="cities"
+                      :placeholder="citiesLoading ? 'Memuat...' : 'Pilih Kota...'"
+                      :disabled="!selectedProvinceId || citiesLoading"
+                      @change="handleCityChange"
+                      bgClass="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Kode Pos</label>
+                    <input 
+                      v-model="editForm.postal_code"
+                      type="text" 
+                      class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-600 transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="flex justify-end">
             <button 
@@ -80,7 +128,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { authState, fetchUser } from '../utils/auth';
+import CustomSelect from '../components/CustomSelect.vue';
 import { Loader2 } from 'lucide-vue-next';
 import axios from 'axios';
 
@@ -91,15 +141,83 @@ const stats = ref({});
 
 const editForm = reactive({
   name: '',
-  email: ''
+  email: '',
+  address: '',
+  city: '',
+  province: '',
+  postal_code: ''
 });
+
+const provinces = ref([]);
+const cities = ref([]);
+const selectedProvinceId = ref('');
+const selectedCityId = ref('');
+const citiesLoading = ref(false);
+
+const fetchProvinces = async () => {
+  try {
+    const res = await fetch('/data/provinces.json');
+    provinces.value = await res.json();
+  } catch (e) {
+    console.error('Gagal memuat provinsi', e);
+  }
+};
+
+const fetchCities = async (provinceId) => {
+  if (!provinceId) {
+    cities.value = [];
+    return;
+  }
+  citiesLoading.value = true;
+  try {
+    const res = await fetch(`/data/regencies/${provinceId}.json`);
+    cities.value = await res.json();
+  } catch (e) {
+    console.error('Gagal memuat kota', e);
+  } finally {
+    citiesLoading.value = false;
+  }
+};
+
+const handleProvinceChange = async () => {
+  const province = provinces.value.find(p => p.id === selectedProvinceId.value);
+  editForm.province = province ? province.name : '';
+  selectedCityId.value = '';
+  editForm.city = '';
+  await fetchCities(selectedProvinceId.value);
+};
+
+const handleCityChange = () => {
+  const city = cities.value.find(c => c.id === selectedCityId.value);
+  editForm.city = city ? city.name : '';
+};
 
 const loadProfileData = async () => {
   loading.value = true;
   await fetchUser();
   if (authState.user) {
-    editForm.name = authState.user.name;
-    editForm.email = authState.user.email;
+    editForm.name = authState.user.name || '';
+    editForm.email = authState.user.email || '';
+    editForm.address = authState.user.address || '';
+    editForm.city = authState.user.city || '';
+    editForm.province = authState.user.province || '';
+    editForm.postal_code = authState.user.postal_code || '';
+    
+    // Load regions data
+    await fetchProvinces();
+    if (editForm.province) {
+      const foundProv = provinces.value.find(p => p.name === editForm.province);
+      if (foundProv) {
+        selectedProvinceId.value = foundProv.id;
+        await fetchCities(foundProv.id);
+        if (editForm.city) {
+          const foundCity = cities.value.find(c => c.name === editForm.city);
+          if (foundCity) {
+            selectedCityId.value = foundCity.id;
+          }
+        }
+      }
+    }
     try {
       const ordersRes = await axios.get('/api/orders');
       const cartRes = await axios.get('/api/cart');

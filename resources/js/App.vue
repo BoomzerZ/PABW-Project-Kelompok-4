@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-black text-white">
+  <div class="flex min-h-screen bg-cyber text-white">
     <!-- Sidebar -->
     <Sidebar v-if="!$route.meta.hideSidebar" class="hidden md:flex" />
 
